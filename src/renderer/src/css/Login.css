@@ -1,0 +1,30 @@
+.login-form {
+    padding: 0 8px 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.login-form > label {
+    width: 100%;
+    font-weight: bold;
+}
+
+.login-form > label > * {
+    font-weight: normal;
+    width: calc(100% - 12px);
+    margin-bottom: 2px;
+    margin-top: 2px;
+}
+
+.login-form-checks {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.login-form-checks > label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}

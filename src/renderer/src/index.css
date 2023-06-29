@@ -1,0 +1,196 @@
+@import url("https://fonts.cdnfonts.com/css/trebuchet-ms-2");
+
+@font-face {
+    font-family: "Pixelated MS Sans Serif";
+    src: url("fonts/ms_sans_serif.woff") format("woff");
+    src: url("fonts/ms_sans_serif.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Pixelated MS Sans Serif";
+    src: url("fonts/ms_sans_serif_bold.woff") format("woff");
+    src: url("fonts/ms_sans_serif_bold.woff2") format("woff2");
+    font-weight: bold;
+    font-style: normal;
+}
+
+* {
+    user-select: none;
+    -webkit-user-drag: none;
+    font-size: 11px;
+    font-family: "Pixelated MS Sans Serif", sans-serif;
+}
+
+*::selection {
+    background-color: #316ac5;
+    color: white;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #ece9d8;
+}
+
+.titlebar {
+    height: 28px;
+    background-position: 0px;
+    background-image: url("img/title/gradient.png");
+    -webkit-app-region: drag;
+    -webkit-user-select: none;
+    user-select: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.titlebar.inactive {
+    background-image: url("img/title/gradient-inactive.png");
+}
+
+.titlebar-text {
+    font-family: "Trebuchet MS", sans-serif;
+    font-size: 14px;
+    color: white;
+    text-shadow: #0a1883 1px 1px 1px;
+}
+
+.titlebar.inactive > .titlebar-text {
+    color: #d0ddf5;
+    text-shadow: none;
+}
+
+.titlebar-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.divider {
+    width: 100%;
+}
+
+.divider > div:first-child {
+    height: 1px;
+    width: 100%;
+    background-color: #aca899;
+}
+
+.divider > div:last-child {
+    height: 1px;
+    width: 100%;
+    background-color: #ffffff;
+}
+
+.titlebar-buttons {
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 2px;
+}
+
+.titlebar-buttons * {
+    -webkit-app-region: no-drag;
+}
+
+.titlebar-buttons > div:nth-child(1) {
+    background-image: url("img/title/min-focus.png");
+    width: 21px;
+    height: 21px;
+}
+
+.titlebar-buttons > div:nth-child(2) {
+    background-image: url("img/title/max-focus.png");
+    width: 21px;
+    height: 21px;
+}
+
+.titlebar-buttons > div:nth-child(3) {
+    background-image: url("img/title/close-focus.png");
+    width: 21px;
+    height: 21px;
+}
+
+.titlebar-buttons:last-child {
+    margin-right: 4px;
+}
+
+.titlebar.inactive > .titlebar-buttons > div:nth-child(1) {
+    background-image: url("img/title/min-unfocus.png");
+}
+
+.titlebar.inactive > .titlebar-buttons > div:nth-child(2) {
+    background-image: url("img/title/max-unfocus.png");
+}
+
+.titlebar.inactive > .titlebar-buttons > div:nth-child(3) {
+    background-image: url("img/title/close-unfocus.png");
+}
+
+.titlebar-buttons > div:nth-child(1):hover {
+    background-image: url("img/title/min-hover.png");
+}
+
+.titlebar-buttons > div:nth-child(2):hover {
+    background-image: url("img/title/max-hover.png");
+}
+
+.titlebar-buttons > div:nth-child(3):hover {
+    background-image: url("img/title/close-hover.png");
+}
+
+.titlebar-buttons > div:nth-child(1):active {
+    background-image: url("img/title/min-active.png");
+}
+
+.titlebar-buttons > div:nth-child(2):active {
+    background-image: url("img/title/max-active.png");
+}
+
+.titlebar-buttons > div:nth-child(3):active {
+    background-image: url("img/title/close-active.png");
+}
+
+input[type="text"],
+input[type="password"] {
+    font-size: 11px;
+    padding: 0px 3px;
+    line-height: 17px;
+    height: 20px;
+    outline: none;
+    border: solid thin #7f9db9;
+}
+
+button,
+input[type="button"],
+input[type="submit"] {
+    min-height: 19px;
+    padding: 5px 0px;
+    border: none;
+    outline: solid thin #003b73;
+    border-radius: 3px;
+    background-image: url("./img/ui/button.png");
+    background-size: 100% 100%;
+    background-position: 0px;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover {
+    background-image: url("./img/ui/button-hover.png");
+    border-left: solid 2px #fcd279;
+    border-right: solid 2px #fcd279;
+}
+
+button:active,
+input[type="button"]:active,
+input[type="submit"]:active {
+    background-image: url("./img/ui/button-active.png");
+    border: none;
+}
