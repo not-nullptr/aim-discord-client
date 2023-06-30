@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.dispriv.aim
 productName: discord-aim-new
 directories:
   buildResources: build
