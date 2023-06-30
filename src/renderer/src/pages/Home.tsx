@@ -1,20 +1,21 @@
 import { useContext, useEffect } from "react";
 import { Context } from "../util/Context";
 import "../css/Home.css";
-import WebSocketContext from "../util/WebsocketContext";
 import banner from "../img/banner.png";
 import splashCropped from "../img/splash-cropped.png";
+const { ipcRenderer } = window.require("electron");
 
 export default function Home() {
     const { state, setState } = useContext(Context);
-    const ws = useContext(WebSocketContext);
     useEffect(() => {
         setState({
             ...state,
             title: `${state.initialReady?.user.username}'s Buddy List Window`,
         });
-        window.electronAPI.setWindowSize(152, 460);
     }, [state.initialReady?.user.username]);
+    useEffect(() => {
+        ipcRenderer.send("set-window-size", 152, 460);
+    }, []);
     return (
         <div
             style={{
@@ -71,6 +72,14 @@ export default function Home() {
                             <ul>
                                 {state.initialReady?.users.map((x) => (
                                     <li
+                                        onDoubleClick={() =>
+                                            ipcRenderer.send(
+                                                "create-window",
+                                                "/message",
+                                                611,
+                                                359
+                                            )
+                                        }
                                         onMouseDown={(e) => {
                                             document
                                                 .querySelectorAll("li.selected")

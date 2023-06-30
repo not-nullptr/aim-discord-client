@@ -1,5 +1,6 @@
-import { State } from "@renderer/types/State";
+import { State } from "../types/State";
 import { OpCodes } from "../types/Codes";
+import { WebSocket } from "ws";
 
 export function sendOp<T>(
     socket: WebSocket,

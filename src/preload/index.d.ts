@@ -1,12 +1,14 @@
-import { ElectronAPI } from "@electron-toolkit/preload";
+// import { ElectronAPI } from "@electron-toolkit/preload";
 
-declare global {
-    interface Window {
-        electronAPI: ElectronAPI & {
-            sendNotification: (
-                options: Electron.NotificationConstructorOptions
-            ) => void;
-            setWindowSize: (width: number, height: number) => void;
-        };
-    }
-}
+// declare global {
+//     interface Window {
+//         electronAPI: ElectronAPI & {
+//             sendNotification: (
+//                 options: Electron.NotificationConstructorOptions
+//             ) => void;
+//             setWindowSize: (width: number, height: number) => void;
+//             startGateway: () => void;
+//             setState: (newState: string) => void;
+//         };
+//     }
+// }

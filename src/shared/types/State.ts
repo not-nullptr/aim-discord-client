@@ -8,5 +8,5 @@ export interface State {
 
 export interface IContext {
     state: State;
-    setState: React.Dispatch<React.SetStateAction<State>>;
+    setState: (newState: State) => void;
 }

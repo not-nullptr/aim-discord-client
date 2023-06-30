@@ -3,15 +3,16 @@ import splash from "../img/splash.png";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../util/Context";
 import "../css/Login.css";
-import WebSocketContext from "../util/WebsocketContext";
-import settings from "electron-settings";
 import { useNavigate } from "react-router-dom";
+const { ipcRenderer } = window.require("electron");
 
 export default function Login() {
     const { state, setState } = useContext(Context);
-    const ws = useContext(WebSocketContext);
-    const [error, setError] = useState("");
+    const [error] = useState("");
     const initialRef = useRef<any | null>(null);
+    ipcRenderer.on("go-to-route", (_, route: string) => {
+        navigate(route);
+    });
     useEffect(() => {
         setState({
             ...state,
@@ -19,8 +20,7 @@ export default function Login() {
         });
     }, []);
     useEffect(() => {
-        initialRef.current = state.initialReady;
-        console.log("changed");
+        initialRef.current = state?.initialReady;
     }, [state]);
     function waitForInitial(): Promise<any> {
         return new Promise((resolve) => {
@@ -58,8 +58,11 @@ export default function Login() {
             <form
                 onSubmit={async (e) => {
                     e.preventDefault();
-                    ws?.startWebSocket((e.target as any).token.value);
-                    waitForInitial().then((i) => {
+                    ipcRenderer.send(
+                        "start-gateway",
+                        (e.target as any).token.value
+                    );
+                    waitForInitial().then(() => {
                         navigate("/home");
                     });
                 }}
