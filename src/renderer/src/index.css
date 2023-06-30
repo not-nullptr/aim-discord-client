@@ -55,6 +55,9 @@ body {
     font-size: 14px;
     color: white;
     text-shadow: #0a1883 1px 1px 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .titlebar.inactive > .titlebar-text {
@@ -93,6 +96,7 @@ body {
     justify-content: flex-end;
     align-items: center;
     gap: 2px;
+    padding-left: 8px;
 }
 
 .titlebar-buttons * {

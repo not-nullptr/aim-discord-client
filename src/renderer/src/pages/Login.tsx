@@ -1,6 +1,6 @@
 import Divider from "../components/Divider";
 import splash from "../img/splash.png";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../util/Context";
 import "../css/Login.css";
 import WebSocketContext from "../util/WebsocketContext";
@@ -11,12 +11,27 @@ export default function Login() {
     const { state, setState } = useContext(Context);
     const ws = useContext(WebSocketContext);
     const [error, setError] = useState("");
+    const initialRef = useRef<any | null>(null);
     useEffect(() => {
         setState({
             ...state,
             title: "Sign On",
         });
     }, []);
+    useEffect(() => {
+        initialRef.current = state.initialReady;
+        console.log("changed");
+    }, [state]);
+    function waitForInitial(): Promise<any> {
+        return new Promise((resolve) => {
+            const interval = setInterval(() => {
+                if (initialRef.current !== null) {
+                    clearInterval(interval);
+                    resolve(initialRef.current);
+                }
+            }, 100);
+        });
+    }
     const navigate = useNavigate();
     return (
         <div
@@ -44,7 +59,9 @@ export default function Login() {
                 onSubmit={async (e) => {
                     e.preventDefault();
                     ws?.startWebSocket((e.target as any).token.value);
-                    navigate("/home");
+                    waitForInitial().then((i) => {
+                        navigate("/home");
+                    });
                 }}
                 className="login-form"
             >

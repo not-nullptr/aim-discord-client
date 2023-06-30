@@ -6,7 +6,7 @@ declare global {
             sendNotification: (
                 options: Electron.NotificationConstructorOptions
             ) => void;
-            convertToIco: (icon: string) => Promise<Electron.NativeImage>;
+            setWindowSize: (width: number, height: number) => void;
         };
     }
 }

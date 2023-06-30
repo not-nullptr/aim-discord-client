@@ -1,0 +1,42 @@
+.text-inset {
+    box-shadow: inset 1px 1px 0px 0px #a9a596;
+    background-color: #ece9d8;
+    border-right: solid 2px #ffffff;
+    border-bottom: solid 2px #ffffff;
+    padding: 3px;
+    width: fit-content;
+}
+
+ul {
+    margin-top: 0px;
+}
+
+li {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    list-style-type: none;
+    font-weight: bold;
+    -webkit-margin-start: -36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+}
+
+li li {
+    font-weight: normal;
+    font-style: italic;
+    padding-left: 16px;
+    width: fit-content;
+    padding-right: 4px;
+}
+
+.buddy-list-container {
+    flex-grow: 1;
+    overflow: auto;
+}
+
+li.selected {
+    background-color: yellow;
+    outline: dotted 1px black;
+}

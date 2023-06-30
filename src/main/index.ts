@@ -37,11 +37,12 @@ function createWindow() {
         icon: path.join(__dirname, "/resources/favicon.ico"),
         // resizable: false,
         webPreferences: {
+            devTools: true,
             preload: path.join(__dirname, "../preload/index.js"),
             nodeIntegration: true,
         },
     });
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
     win.on("blur", () => {
         win?.webContents.executeJavaScript(`
       document.querySelector('.titlebar').classList.add('inactive');

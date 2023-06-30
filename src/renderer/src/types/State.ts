@@ -1,4 +1,4 @@
-import { Guild, ReadyPacket, User } from "./Gateway";
+import { ReadyPacket } from "./Gateway";
 
 export interface State {
     token: string;
