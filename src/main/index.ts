@@ -79,18 +79,21 @@ function createWindow() {
             }).show();
         }
     );
-    ipcMain.handle(
-        "convert-to-ico",
-        async (event, icon: string): Promise<Electron.NativeImage> => {
-            return await sharp(await (await fetch(icon)).arrayBuffer())
-                .resize(256, 256)
-                .png()
-                .toBuffer()
-                .then((data) => {
-                    return nativeImage.createFromBuffer(data);
-                });
-        }
-    );
+    // ipcMain.handle(
+    //     "convert-to-ico",
+    //     async (event, icon: string): Promise<Electron.NativeImage> => {
+    //         return await sharp(await (await fetch(icon)).arrayBuffer())
+    //             .resize(256, 256)
+    //             .png()
+    //             .toBuffer()
+    //             .then((data) => {
+    //                 return nativeImage.createFromBuffer(data);
+    //             });
+    //     }
+    // );
+    ipcMain.on("set-window-size", (event, width: number, height: number) => {
+        win?.setSize(width, height);
+    });
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
         win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     } else {

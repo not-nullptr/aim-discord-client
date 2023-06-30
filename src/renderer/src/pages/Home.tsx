@@ -9,7 +9,7 @@ export default function Home() {
     useEffect(() => {
         setState({
             ...state,
-            title: "Sign On",
+            title: `${state.initialReady.user.username}'s Buddy List Window`,
         });
     }, []);
     return (

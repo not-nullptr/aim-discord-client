@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import WebSocketContext from "../util/WebsocketContext";
 import { OpCodes } from "../types/Codes";
-import { GatewayEvent, sendOp } from "../util/Gateway";
+import { GatewayEvent, convertToMentionName, sendOp } from "../util/Gateway";
 import {
     IdentifyPacket,
     DispatchType,
@@ -18,15 +18,37 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
         state: State
     ): { [K in DispatchType]?: (payload: any) => any } => ({
         MESSAGE_CREATE: (payload: MessageCreatePacket) => {
+            const isMentioned =
+                payload.mentions.filter(
+                    (x) => x.id === state.initialReady.user.id
+                ).length > 0;
+            const dmOrGroupChat =
+                state.initialReady.private_channels.find(
+                    (c) => c.id === payload.channel_id
+                ) !== undefined;
+            const focused = document.hasFocus();
+            const ownMessage = payload.author.id === state.initialReady.user.id;
+            const mentionsEveryone = payload.mention_everyone;
             if (
-                payload.mentions.find((mention) => mention.id === state.user.id)
+                (isMentioned || dmOrGroupChat || mentionsEveryone) &&
+                !focused &&
+                !ownMessage
             ) {
                 const audio = new Audio(mail);
                 audio.play();
                 const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
                 window.electronAPI.sendNotification({
                     title: `You've Got Mail!`,
-                    body: `${payload.author.username}: ${payload.content}`,
+                    body: `${payload.author.username}: ${
+                        convertToMentionName(payload.content, state)
+                            .cleanedMessage
+                    } ${
+                        payload.attachments.length > 0
+                            ? `<${payload.attachments.length} attachment${
+                                  payload.attachments.length === 1 ? "" : "s"
+                              }>`
+                            : ""
+                    }`,
                     icon: iconUrl,
                 });
             }
@@ -34,8 +56,7 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
         READY: (payload: ReadyPacket) => {
             setState({
                 ...state,
-                user: payload.user,
-                guilds: payload.guilds,
+                initialReady: payload,
             });
         },
     });
@@ -91,6 +112,7 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
             const data: GatewayEvent<any> = JSON.parse(event.data);
             switch (data.op) {
                 case OpCodes.DISPATCH: {
+                    console.log(data);
                     const handler = (getTypeHandlers(state) as any)[
                         data.t as any
                     ] as (payload: any) => any | undefined;

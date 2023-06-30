@@ -1,10 +1,9 @@
-import { Guild, User } from "./Gateway";
+import { Guild, ReadyPacket, User } from "./Gateway";
 
 export interface State {
     token: string;
     title: string;
-    user: User;
-    guilds: Guild[];
+    initialReady: ReadyPacket;
 }
 
 export interface IContext {

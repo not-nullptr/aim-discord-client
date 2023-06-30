@@ -5,6 +5,7 @@ import { Context } from "../util/Context";
 import "../css/Login.css";
 import WebSocketContext from "../util/WebsocketContext";
 import settings from "electron-settings";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
     const { state, setState } = useContext(Context);
@@ -16,6 +17,7 @@ export default function Login() {
             title: "Sign On",
         });
     }, []);
+    const navigate = useNavigate();
     return (
         <div
             style={{
@@ -42,7 +44,7 @@ export default function Login() {
                 onSubmit={async (e) => {
                     e.preventDefault();
                     ws?.startWebSocket((e.target as any).token.value);
-                    // write into cookies
+                    navigate("/home");
                 }}
                 className="login-form"
             >
