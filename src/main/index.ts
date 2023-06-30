@@ -27,12 +27,14 @@ let win: BrowserWindow | null;
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 
 function createWindow() {
+    console.log(path.join(__dirname, "/resources/favicon.ico"));
     win = new BrowserWindow({
         width: 216,
         height: 394,
         // width: 1000,
         // height: 800,
         frame: false,
+        icon: path.join(__dirname, "/resources/favicon.ico"),
         // resizable: false,
         webPreferences: {
             preload: path.join(__dirname, "../preload/index.js"),

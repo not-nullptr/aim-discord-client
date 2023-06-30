@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import WebSocketContext from "../util/WebsocketContext";
 import { OpCodes } from "../types/Codes";
 import { GatewayEvent, sendOp } from "../util/Gateway";
@@ -6,49 +6,48 @@ import {
     IdentifyPacket,
     DispatchType,
     MessageCreatePacket,
+    ReadyPacket,
 } from "../types/Gateway";
 import mail from "../audio/YouGotMail.mp3";
-
-const typeHandlers: { [K in DispatchType]?: (payload: any) => any } = {
-    MESSAGE_CREATE: (payload: MessageCreatePacket) => {
-        console.log(payload.mentions);
-        if (
-            payload.mentions.find(
-                (mention) => mention.id === "1053012491006910504"
-            )
-        ) {
-            const audio = new Audio(mail);
-            audio.play();
-            const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
-            window.electronAPI.sendNotification({
-                title: `You've Got Mail!`,
-                body: `${payload.author.username}: ${payload.content}`,
-                icon: iconUrl,
-            });
-        }
-    },
-};
+import { Context } from "@renderer/util/Context";
+import { State } from "@renderer/types/State";
 
 const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
+    const { state, setState } = useContext(Context);
+    const getTypeHandlers = (
+        state: State
+    ): { [K in DispatchType]?: (payload: any) => any } => ({
+        MESSAGE_CREATE: (payload: MessageCreatePacket) => {
+            if (
+                payload.mentions.find((mention) => mention.id === state.user.id)
+            ) {
+                const audio = new Audio(mail);
+                audio.play();
+                const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
+                window.electronAPI.sendNotification({
+                    title: `You've Got Mail!`,
+                    body: `${payload.author.username}: ${payload.content}`,
+                    icon: iconUrl,
+                });
+            }
+        },
+        READY: (payload: ReadyPacket) => {
+            setState({
+                ...state,
+                user: payload.user,
+                guilds: payload.guilds,
+            });
+        },
+    });
     const socket = useRef<WebSocket | null>(null);
     useEffect(() => {
-        if (socket) {
-            socket.current?.close(1000, "New websocket connection started");
-        }
-    }, [socket]);
-
-    const startWebSocket = (token: string) => {
-        if (socket.current)
-            socket.current.close(1000, "New websocket connection started");
-        const newSocket = new WebSocket(
-            "wss://gateway.discord.gg/?v=9&encoding=json"
-        );
-        newSocket.onopen = () => {
+        if (!socket.current || socket.current === null) return;
+        socket.current.onopen = () => {
             sendOp<IdentifyPacket>(
-                newSocket,
+                socket.current!,
                 OpCodes.IDENTIFY,
                 {
-                    token,
+                    token: state.token,
                     capabilities: 16381,
                     properties: {
                         os: "Windows",
@@ -88,33 +87,53 @@ const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
                 null
             );
         };
-        newSocket.onmessage = (event: MessageEvent<string>) => {
+        socket.current.onmessage = (event: MessageEvent<string>) => {
             const data: GatewayEvent<any> = JSON.parse(event.data);
             switch (data.op) {
                 case OpCodes.DISPATCH: {
-                    const handler = (typeHandlers as any)[data.t as any] as (
-                        payload: any
-                    ) => any | undefined;
+                    const handler = (getTypeHandlers(state) as any)[
+                        data.t as any
+                    ] as (payload: any) => any | undefined;
                     if (handler) handler(data.d);
                     else {
-                        console.error(`Unimplemented dispatch! ${data.t}`);
-                        console.error(data);
+                        console.warn(`Unimplemented dispatch: ${data.t}`);
+                        console.warn(data);
+                        console.warn(JSON.stringify(data.d));
                     }
                     break;
                 }
                 case OpCodes.HELLO: {
                     setInterval(() => {
-                        sendOp(newSocket, OpCodes.HEARTBEAT, null, null, null);
+                        sendOp(
+                            socket.current!,
+                            OpCodes.HEARTBEAT,
+                            null,
+                            null,
+                            null
+                        );
                     }, data.d.heartbeat_interval);
                     break;
                 }
                 default: {
-                    console.error(`Unimplemented op! ${data.op}`);
-                    console.error(data);
+                    console.warn(`Unimplemented op: ${data.op}`);
+                    console.warn(data);
+                    console.warn(JSON.stringify(data.d));
                 }
             }
         };
+    }, [socket, state]);
+
+    const startWebSocket = (token: string) => {
+        if (socket.current)
+            socket.current.close(1000, "New websocket connection started");
+        const newSocket = new WebSocket(
+            "wss://gateway.discord.gg/?v=9&encoding=json"
+        );
         socket.current = newSocket;
+        setState({
+            ...state,
+            token,
+        });
     };
 
     return (

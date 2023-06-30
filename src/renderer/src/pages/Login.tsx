@@ -4,8 +4,9 @@ import { useContext, useEffect, useState } from "react";
 import { Context } from "../util/Context";
 import "../css/Login.css";
 import WebSocketContext from "../util/WebsocketContext";
+import settings from "electron-settings";
 
-function App() {
+export default function Login() {
     const { state, setState } = useContext(Context);
     const ws = useContext(WebSocketContext);
     const [error, setError] = useState("");
@@ -41,6 +42,7 @@ function App() {
                 onSubmit={async (e) => {
                     e.preventDefault();
                     ws?.startWebSocket((e.target as any).token.value);
+                    // write into cookies
                 }}
                 className="login-form"
             >
@@ -100,5 +102,3 @@ function App() {
         </div>
     );
 }
-
-export default App;
