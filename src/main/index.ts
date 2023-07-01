@@ -292,13 +292,13 @@ function createWindow() {
                 newWindow.webContents.send("go-to-route", url);
             });
             newWindow.on("blur", () => {
-                win?.webContents.executeJavaScript(
+                newWindow?.webContents.executeJavaScript(
                     `document.querySelector('.titlebar').classList.add('inactive');`
                 );
             });
 
             newWindow.on("focus", () => {
-                win?.webContents.executeJavaScript(
+                newWindow?.webContents.executeJavaScript(
                     `document.querySelector('.titlebar').classList.remove('inactive');`
                 );
             });
