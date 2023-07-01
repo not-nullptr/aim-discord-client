@@ -22,6 +22,9 @@ import {
     GatewayEvent,
     convertToMentionName,
 } from "../shared/util/Gateway";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // The built directory structure
 //
@@ -189,6 +192,9 @@ function createWindow() {
             }).show();
         }
     );
+    ipcMain.on("get-debug-token", (_e) => {
+        _e.returnValue = process.env["DEBUG_TOKEN"] || "";
+    });
     ipcMain.on("start-gateway", (_e, token: string) => {
         socket = new WebSocket("wss://gateway.discord.gg/?v=9&encoding=json");
         socket!.onopen = () => {

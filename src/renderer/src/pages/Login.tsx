@@ -78,7 +78,7 @@ export default function Login() {
                         name="token"
                         placeholder="Discord Token"
                         type="text"
-                        defaultValue="MTA1MzAxMjQ5MTAwNjkxMDUwNA.GsrFEy.EwgZt8VN4Jaam0weugMEJsGaIOAcoHH5_Au5Rw"
+                        defaultValue={ipcRenderer.sendSync("get-debug-token")}
                     />
                 </label>
                 {/* <label htmlFor="login">
