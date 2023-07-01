@@ -1,13 +1,31 @@
 import { useContext, useEffect, useState } from "react";
 import { Context } from "../util/Context";
-import { User } from "src/shared/types/Gateway";
+import { User, UserProfile } from "src/shared/types/Gateway";
 import { req } from "@renderer/util/Rest";
 import Divider from "@renderer/components/Divider";
 const { ipcRenderer } = window.require("electron");
 
 export default function BuddyInfo() {
     const { state, setState } = useContext(Context);
-	const [ foundBuddy, setFoundBuddy ] = useState<User>();
+	const [ foundBuddy, setFoundBuddy ] = useState<UserProfile>();
+	const [ notFoundBuddy ] = useState<UserProfile>({
+		user: {
+			id: "404",
+			username: "-",
+			discriminator: "0",
+			avatar: null
+		},
+		user_profile: {},
+		badges: [],
+		guild_badges: [],
+		legacy_username: "-",
+		mutual_guilds: [],
+		connected_accounts: [],
+		application_role_connections: [],
+		premium_type: null,
+		premium_since: null,
+		premium_guild_since: null
+	});
 
 	useEffect(() => {
 		setState({
@@ -25,31 +43,21 @@ export default function BuddyInfo() {
 
 		const userId = state.initialReady?.users.find(x => x.username.toLowerCase().includes(buddyName.toLowerCase()))?.id;
 		if (!userId) {
-			setFoundBuddy({
-				id: "-1",
-				username: "-",
-				discriminator: "0",
-				avatar: null
-			});
+			setFoundBuddy(notFoundBuddy);
 			ipcRenderer.send("set-window-size", 489, 365);
 			return;
 		}
 
-		req<User>(
+		req<UserProfile>(
             state?.token,
-            `/users/${userId}`,
+            `/users/${userId}/profile`,
             "GET"
         ).then((res) => {
 			console.log(res);
             setFoundBuddy(res);
 			ipcRenderer.send("set-window-size", 489, 365);
         }).catch(() => {
-			setFoundBuddy({
-				id: "-1",
-				username: "-",
-				discriminator: "0",
-				avatar: null
-			});
+			setFoundBuddy(notFoundBuddy);
 			ipcRenderer.send("set-window-size", 489, 365);
 		});
 	}
