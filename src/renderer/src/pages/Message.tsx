@@ -20,12 +20,17 @@ export function convertToMentionName(
     const mentionRegex = /<@(\d{1,20})>/g;
     let startIndex = 0;
     let cleanedMessage: React.ReactNode[] = [];
+	const headerRegex = /^#{1,3}\s/g;
+	const isHeader = headerRegex.test(message); // hacky, will un-hardcode later
+	const headerStyle = isHeader ? { fontSize: 45 - ((message.match(/^#{1,3}/g) ?? [""])[0].length) * 8 } : {};
+	if (isHeader)
+		message = message.replace(headerRegex, "");
 
     while (true) {
         const match = mentionRegex.exec(message);
         if (match === null) {
             cleanedMessage.push(
-                <span key={startIndex}>{message.substring(startIndex)}</span>
+                <span key={startIndex} style={headerStyle}>{message.substring(startIndex)}</span>
             );
             break;
         }
@@ -38,16 +43,16 @@ export function convertToMentionName(
 
         if (user) {
             cleanedMessage.push(
-                <span key={startIndex} className={generic}>
+                <span key={startIndex} style={headerStyle} className={generic}>
                     {message.substring(startIndex, endIndex)}
-                    <span className={mention}>@{user.username}</span>
+                    <span className={mention} style={headerStyle}>@{user.username}</span>
                 </span>
             );
         } else {
             cleanedMessage.push(
-                <span className={generic} key={startIndex}>
+                <span className={generic} key={startIndex} style={headerStyle}>
                     {message.substring(startIndex, endIndex)}
-                    <span className={mention}>&lt;@{mentionId}&gt;</span>
+                    <span className={mention} style={headerStyle}>&lt;@{mentionId}&gt;</span>
                 </span>
             );
         }
@@ -182,15 +187,17 @@ export default function DMs() {
                             >
                                 {m.author.username}
                             </span>
-                            {": "}
-                            {
-                                convertToMentionName(
-                                    m.content,
-                                    state,
-                                    "message-content",
-                                    "message-mention"
-                                ).cleanedMessage
-                            }
+                            <div style={{ display: "inline" }}>
+								{": "}
+								{
+									convertToMentionName(
+										m.content,
+										state,
+										"message-content",
+										"message-mention"
+									).cleanedMessage
+								}
+							</div>
                         </div>
                     ))}
                 </div>

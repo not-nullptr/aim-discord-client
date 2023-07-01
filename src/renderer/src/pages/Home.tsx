@@ -56,7 +56,13 @@ export default function Home() {
 				<span className="toolbar-item">
 					People
 				</span>
-				<span className="toolbar-item">
+				<span className="toolbar-item" onClick={() => ipcRenderer.send(
+						"create-window",
+						`/about`,
+						400,
+						200,
+						false
+					)}>
 					Help
 				</span>
             </div>
@@ -243,7 +249,7 @@ export default function Home() {
 						`/buddyinfo`,
 						307,
 						138,
-						//false
+						false
 					)
 				}>
 					<img src={placeholder}/>

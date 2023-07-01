@@ -36,13 +36,10 @@ export default function BuddyInfo() {
 
 	function requestUserDetails() {
 		const buddyName = (document.getElementById("requestedScreenName") as HTMLInputElement).value;
-		setState({
-            ...state,
-            title: `Buddy Info: ${buddyName}`
-        });
 
 		const userId = state.initialReady?.users.find(x => x.username.toLowerCase().includes(buddyName.toLowerCase()))?.id;
 		if (!userId) {
+			notFoundBuddy.user.username = buddyName;
 			setFoundBuddy(notFoundBuddy);
 			ipcRenderer.send("set-window-size", 489, 365);
 			return;
@@ -56,7 +53,13 @@ export default function BuddyInfo() {
 			console.log(res);
             setFoundBuddy(res);
 			ipcRenderer.send("set-window-size", 489, 365);
+
+			setState({
+				...state,
+				title: `Buddy Info: ${res.user.username}`
+			});
         }).catch(() => {
+			notFoundBuddy.user.username = buddyName;
 			setFoundBuddy(notFoundBuddy);
 			ipcRenderer.send("set-window-size", 489, 365);
 		});
@@ -117,13 +120,38 @@ export default function BuddyInfo() {
 					}}
 				/>
 				{foundBuddy ? (
-					<Divider
-						style={{
-							marginTop: 20,
-							marginLeft: "-8px",
-							width: "100%"
-						}}
-					/>
+					<div>
+						<Divider
+							style={{
+								marginTop: 7,
+								marginLeft: "-8px",
+								width: "calc(100% + 8px)"
+							}}
+						/>
+						<div style={{ marginTop: 5, marginBottom: 20 }} >
+							<div style={{ marginBottom: 5 }}>
+								<b>Warning Level: </b>
+								0%
+								{/* would be really cool if this was 100% if that user is blocked and 0% if its not */}
+							</div>
+							<div>
+								<b>Online time: </b>
+								TBD
+							</div>
+						</div>
+						<Divider
+							style={{
+								marginLeft: "-8px",
+								width: "calc(100% + 8px)"
+							}}
+						/>
+						<div style={{ marginTop: 3 }}>
+							<b>Personal Profile:</b>
+							<div className="good-lookin-div" style={{ marginTop: "3px", width: "calc(100% - 20px)", height: "123px" }}>
+								{foundBuddy.user.id === "404" ? (<span>Buddy Info for <b>{foundBuddy.user.username}</b> is not available.</span>) : foundBuddy.user_profile.bio}
+							</div>
+						</div>
+					</div>
 				) : null}
 			</div>
 		</div>
