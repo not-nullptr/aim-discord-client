@@ -50,6 +50,15 @@ let windows: {
     isMain: boolean;
 }[] = [];
 
+function windowFromChannelId(channelId: string): BrowserWindow | undefined {
+    for (const window of BrowserWindow.getAllWindows()) {
+        if (window.webContents.getURL().includes(`/message?id=${channelId}`)) {
+            return window;
+        }
+    }
+    return undefined;
+}
+
 function setState(newState: any) {
     state = newState;
     BrowserWindow.getAllWindows().forEach((window) => {
@@ -75,7 +84,7 @@ const getTypeHandlers = (
         const isSelf = payload.author.id === state.initialReady?.user.id;
         if ((isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf) {
             const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
-            new Notification({
+            const noti = new Notification({
                 title: `${payload.author.username} says:`,
                 body: `${
                     convertToMentionName(payload.content, state).cleanedMessage
@@ -86,16 +95,39 @@ const getTypeHandlers = (
                           }>`
                         : ""
                 }`,
-                icon: nativeImage.createFromBuffer(
-                    await sharp(
-                        await (await fetch(iconUrl as string)).arrayBuffer()
-                    )
-                        .resize(256, 256)
-                        .png()
-                        .toBuffer()
-                ),
+                icon: await (async () => {
+                    try {
+                        return nativeImage.createFromBuffer(
+                            await sharp(
+                                await (
+                                    await fetch(iconUrl as string)
+                                ).arrayBuffer()
+                            )
+                                .resize(256, 256)
+                                .png()
+                                .toBuffer()
+                        );
+                    } catch {
+                        return undefined;
+                    }
+                })(),
                 silent: true,
-            }).show();
+            });
+            noti.on("click", () => {
+                const window = windowFromChannelId(payload.channel_id);
+                if (window) {
+                    window.show();
+                    window.focus();
+                } else {
+                    createPopupWindow(
+                        `/message?id=${payload.channel_id}`,
+                        611,
+                        359
+                    );
+                }
+            });
+            noti.show();
+
             win?.webContents.send("play-sound", "Receive");
         }
         // ) {
@@ -138,6 +170,42 @@ const defaultOptions: Electron.BrowserWindowConstructorOptions = {
         contextIsolation: false,
     },
 };
+
+function createPopupWindow(
+    url: string,
+    width?: number,
+    height?: number,
+    resizable: boolean = true
+) {
+    const newWindow = new BrowserWindow({
+        ...defaultOptions,
+        width: width || defaultOptions.width,
+        height: height || defaultOptions.height,
+        resizable: debug ? true : resizable,
+    });
+    if (debug) {
+        newWindow.webContents.openDevTools();
+    }
+
+    if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+        newWindow.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#${url}`);
+    } else {
+        const indexPath = join(__dirname, "../renderer/index.html");
+        newWindow.loadURL(`file://${indexPath}#${url}`);
+    }
+    newWindow.on("blur", () => {
+        newWindow?.webContents.executeJavaScript(
+            `document.querySelector('.titlebar').classList.add('inactive');`
+        );
+    });
+
+    newWindow.on("focus", () => {
+        newWindow?.webContents.executeJavaScript(
+            `document.querySelector('.titlebar').classList.remove('inactive');`
+        );
+    });
+    newWindow.removeMenu();
+}
 
 function createWindow() {
     console.log(path.join(__dirname, "/resources/favicon.ico"));
@@ -280,36 +348,7 @@ function createWindow() {
             height?: number,
             resizable: boolean = true
         ) => {
-            const newWindow = new BrowserWindow({
-                ...defaultOptions,
-                width: width || defaultOptions.width,
-                height: height || defaultOptions.height,
-                resizable: debug ? true : resizable,
-            });
-            if (debug) {
-                newWindow.webContents.openDevTools();
-            }
-
-            if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-                newWindow.loadURL(
-                    `${process.env["ELECTRON_RENDERER_URL"]}#${url}`
-                );
-            } else {
-                const indexPath = join(__dirname, "../renderer/index.html");
-                newWindow.loadURL(`file://${indexPath}#${url}`);
-            }
-            newWindow.on("blur", () => {
-                newWindow?.webContents.executeJavaScript(
-                    `document.querySelector('.titlebar').classList.add('inactive');`
-                );
-            });
-
-            newWindow.on("focus", () => {
-                newWindow?.webContents.executeJavaScript(
-                    `document.querySelector('.titlebar').classList.remove('inactive');`
-                );
-            });
-            newWindow.removeMenu();
+            createPopupWindow(url, width, height, resizable);
         }
     );
     ipcMain.on("get-state", (_e) => {
