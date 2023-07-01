@@ -39,6 +39,13 @@
     color: blue;
 }
 
+.message-mention {
+    color: skyblue;
+    background-color: blue;
+    font-weight: bold;
+    font-style: italic;
+}
+
 .message-author {
     font-weight: bold;
 }

@@ -9,6 +9,54 @@ import { GatewayEvent } from "src/shared/util/Gateway";
 const { ipcRenderer } = window.require("electron");
 import send from "../audio/Send.wav";
 import receive from "../audio/Receive.wav";
+import { State } from "src/shared/types/State";
+
+export function convertToMentionName(
+    message: string,
+    state: State,
+    generic: string,
+    mention: string
+) {
+    const mentionRegex = /<@(\d{19})>/g;
+    let startIndex = 0;
+    let cleanedMessage: React.ReactNode[] = [];
+
+    while (true) {
+        const match = mentionRegex.exec(message);
+        if (match === null) {
+            cleanedMessage.push(
+                <span key={startIndex}>{message.substring(startIndex)}</span>
+            );
+            break;
+        }
+
+        const mentionId = match[1];
+        const user = state.initialReady.users.find(
+            (user) => user.id === mentionId
+        );
+        const endIndex = match.index;
+
+        if (user) {
+            cleanedMessage.push(
+                <span key={startIndex} className={generic}>
+                    {message.substring(startIndex, endIndex)}
+                    <span className={mention}>@{user.username}</span>
+                </span>
+            );
+        } else {
+            cleanedMessage.push(
+                <span className={generic} key={startIndex}>
+                    {message.substring(startIndex, endIndex)}
+                    <span className={mention}>@{mentionId}</span>
+                </span>
+            );
+        }
+
+        startIndex = mentionRegex.lastIndex;
+    }
+
+    return { mentionId: null, cleanedMessage };
+}
 
 export default function DMs() {
     const result = (a: any) =>
@@ -25,6 +73,7 @@ export default function DMs() {
                 : c.id === params.get("id")
         )
     );
+    const chatRef = useRef<HTMLDivElement>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [users, setUsers] = useState(
         dmMut.current?.recipient_ids?.map((id) =>
@@ -86,6 +135,11 @@ export default function DMs() {
             setMessages(res);
         });
     }, []);
+    useEffect(() => {
+        if (chatRef.current) {
+            chatRef.current.scrollTop = chatRef.current.scrollHeight;
+        }
+    }, [messages]);
     function onSubmit() {
         {
             const textarea = document.querySelector(
@@ -116,7 +170,7 @@ export default function DMs() {
                     height: "calc(100vh - 28px - 20px - 12px - 8px)",
                 }}
             >
-                <div className="chat-container">
+                <div className="chat-container" ref={chatRef}>
                     {messages.map((m) => (
                         <div key={m.id} className="message-container">
                             <span
@@ -128,9 +182,15 @@ export default function DMs() {
                             >
                                 {m.author.username}
                             </span>
-                            <span className="message-content">
-                                {`: ${m.content}`}
-                            </span>
+                            {": "}
+                            {
+                                convertToMentionName(
+                                    m.content,
+                                    state,
+                                    "message-content",
+                                    "message-mention"
+                                ).cleanedMessage
+                            }
                         </div>
                     ))}
                 </div>
