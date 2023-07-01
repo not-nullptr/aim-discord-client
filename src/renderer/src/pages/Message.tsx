@@ -181,8 +181,8 @@ export default function DMs() {
             >
                 <div className="chat-container" ref={chatRef}>
                     {messages.map((m) => (
-                        <div>
-                            <div key={m.id} className="message-container">
+                        <div key={m.id}>
+                            <div className="message-container">
                                 <span
                                     className={`message-author ${
                                         m.author.id ===
@@ -205,15 +205,23 @@ export default function DMs() {
                                     }
                                 </div>
                             </div>
-                            <div className="attachments">
-                                {m.attachments?.map((a) => (
-                                    // TODO: attachment type (a.content_type?)
-                                    <img
-                                        className="attachment-image"
-                                        src={a.url}
-                                    />
-                                ))}
-                            </div>
+                            {m.attachments?.length > 0 ? (
+                                <div className="attachments">
+                                    {m.attachments?.map((a) => (
+                                        // TODO: attachment type (a.content_type?)
+                                        <a
+                                            key={a.id}
+                                            href={a.url}
+                                            target="_blank"
+                                        >
+                                            <img
+                                                className="attachment-image"
+                                                src={a.url}
+                                            />
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : null}
                         </div>
                     ))}
                 </div>
