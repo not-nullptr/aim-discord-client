@@ -80,18 +80,94 @@ export interface Emoji {
     available?: boolean;
 }
 
-export interface UnavailableGuild {
+export interface Guild {
+    version: number;
+    threads: any[];
+    stickers: any[];
+    stage_instances: any[];
+    roles: Role[];
+    properties: Properties;
+    premium_subscription_count: number;
+    member_count: number;
+    lazy: boolean;
+    large: boolean;
+    joined_at: Date;
     id: string;
+    guild_scheduled_events: any[];
+    emojis: any[];
+    data_mode: string;
+    channels: Channel[];
+    application_command_counts: ApplicationCommandCounts;
+}
+
+export interface ApplicationCommandCounts {}
+
+export interface IconEmoji {
     name: string;
-    icon?: string;
-    splash?: string;
-    discovery_splash?: string;
-    emojis: Emoji[];
+    id: null;
+}
+
+export interface PermissionOverwrite {
+    type: number;
+    id: string;
+    deny: string;
+    allow: string;
+}
+
+export interface Properties {
+    premium_progress_bar_enabled: boolean;
+    incidents_data: null;
+    default_message_notifications: number;
+    afk_timeout: number;
+    public_updates_channel_id: null;
+    nsfw: boolean;
+    description: null;
+    id: string;
+    system_channel_id: string;
+    application_id: null;
+    safety_alerts_channel_id: null;
+    owner_id: string;
+    system_channel_flags: number;
+    icon: string;
+    max_stage_video_channel_users: number;
+    premium_tier: number;
+    discovery_splash: null;
+    splash: null;
+    vanity_url_code: null;
+    banner: null;
+    latest_onboarding_question_id: null;
+    verification_level: number;
+    mfa_level: number;
+    explicit_content_filter: number;
+    preferred_locale: string;
+    max_video_channel_users: number;
+    nsfw_level: number;
+    afk_channel_id: null;
+    home_header: null;
     features: string[];
-    approximate_member_count: number;
-    approximate_presence_count: number;
-    description?: string;
-    stickers: Sticker[];
+    name: string;
+    max_members: number;
+    rules_channel_id: null;
+    hub_type: null;
+}
+
+export interface Role {
+    unicode_emoji: null;
+    tags: Tags;
+    position: number;
+    permissions: string;
+    name: string;
+    mentionable: boolean;
+    managed: boolean;
+    id: string;
+    icon: null;
+    hoist: boolean;
+    flags: number;
+    color: number;
+}
+
+export interface Tags {
+    premium_subscriber?: null;
 }
 
 export interface Channel {
@@ -127,7 +203,7 @@ export interface ReadyPacket {
     v: number;
     user: User;
     users: User[];
-    guilds: UnavailableGuild[];
+    guilds: Guild[];
     session_id: string;
     resume_gateway_url: string;
     shard?: [number, number];

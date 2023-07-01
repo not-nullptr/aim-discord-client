@@ -37,7 +37,7 @@ process.env.PUBLIC = app.isPackaged
     ? process.env.DIST
     : path.join(process.env.DIST, "../public");
 
-const debug = false;
+const debug = true;
 
 let win: BrowserWindow | null;
 let socket: WebSocket | null;

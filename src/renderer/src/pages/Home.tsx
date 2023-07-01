@@ -186,6 +186,32 @@ export default function Home() {
                                     ))}
                             </ul>
                         </details>
+                        <details>
+                            <summary>
+                                Servers ({state.initialReady?.guilds.length})
+                            </summary>
+                            <ul>
+                                {state.initialReady?.guilds.map((x) => (
+                                    <li
+                                        key={x.id}
+                                        onMouseDown={(e) => {
+                                            document
+                                                .querySelectorAll("li.selected")
+                                                .forEach((x) =>
+                                                    x.classList.remove(
+                                                        "selected"
+                                                    )
+                                                );
+                                            const target =
+                                                e.target as HTMLLIElement;
+                                            target.classList.add("selected");
+                                        }}
+                                    >
+                                        {x.properties.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        </details>
                     </li>
                 </ul>
             </div>

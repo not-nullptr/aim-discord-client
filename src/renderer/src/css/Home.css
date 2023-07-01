@@ -27,7 +27,7 @@ li li {
     font-weight: normal;
     font-style: italic;
     padding-left: 16px;
-    width: fit-content;
+    width: 100%;
     padding-right: 4px;
 }
 
