@@ -181,26 +181,38 @@ export default function DMs() {
             >
                 <div className="chat-container" ref={chatRef}>
                     {messages.map((m) => (
-                        <div key={m.id} className="message-container">
-                            <span
-                                className={`message-author ${
-                                    m.author.id === state.initialReady?.user.id
-                                        ? "self"
-                                        : "other"
-                                }`}
-                            >
-                                {m.author.username}
-                            </span>
-                            <div style={{ display: "inline" }}>
-                                {": "}
-                                {
-                                    convertToMentionName(
-                                        m.content,
-                                        state,
-                                        "message-content",
-                                        "message-mention"
-                                    ).cleanedMessage
-                                }
+                        <div>
+                            <div key={m.id} className="message-container">
+                                <span
+                                    className={`message-author ${
+                                        m.author.id ===
+                                        state.initialReady?.user.id
+                                            ? "self"
+                                            : "other"
+                                    }`}
+                                >
+                                    {m.author.username}
+                                </span>
+                                <div style={{ display: "inline" }}>
+                                    {": "}
+                                    {
+                                        convertToMentionName(
+                                            m.content,
+                                            state,
+                                            "message-content",
+                                            "message-mention"
+                                        ).cleanedMessage
+                                    }
+                                </div>
+                            </div>
+                            <div className="attachments">
+                                {m.attachments?.map((a) => (
+                                    // TODO: attachment type (a.content_type?)
+                                    <img
+                                        className="attachment-image"
+                                        src={a.url}
+                                    />
+                                ))}
                             </div>
                         </div>
                     ))}

@@ -40,7 +40,7 @@ process.env.PUBLIC = app.isPackaged
     ? process.env.DIST
     : path.join(process.env.DIST, "../public");
 
-const debug = false;
+const debug = true;
 
 let win: BrowserWindow | null;
 let socket: WebSocket | null;
@@ -52,13 +52,6 @@ let windows: {
 
 function setState(newState: any) {
     state = newState;
-    // TODO: in future, we'll have an array of windows for popups and the like.
-    // windows.forEach((window) => {
-    //     BrowserWindow.fromId(window.id)!.webContents.send(
-    //         "set-state",
-    //         newState
-    //     );
-    // });
     BrowserWindow.getAllWindows().forEach((window) => {
         window.webContents.send("set-state", newState);
     });
@@ -296,15 +289,15 @@ function createWindow() {
             if (debug) {
                 newWindow.webContents.openDevTools();
             }
-            // open on index.html
+
             if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-                newWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+                newWindow.loadURL(
+                    `${process.env["ELECTRON_RENDERER_URL"]}#${url}`
+                );
             } else {
-                newWindow.loadFile(join(__dirname, "../renderer/index.html"));
+                const indexPath = join(__dirname, "../renderer/index.html");
+                newWindow.loadURL(`file://${indexPath}#${url}`);
             }
-            newWindow.webContents.on("did-finish-load", () => {
-                newWindow.webContents.send("go-to-route", url);
-            });
             newWindow.on("blur", () => {
                 newWindow?.webContents.executeJavaScript(
                     `document.querySelector('.titlebar').classList.add('inactive');`
