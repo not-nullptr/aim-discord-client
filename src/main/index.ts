@@ -37,7 +37,7 @@ process.env.PUBLIC = app.isPackaged
     ? process.env.DIST
     : path.join(process.env.DIST, "../public");
 
-const debug = true;
+const debug = false;
 
 let win: BrowserWindow | null;
 let socket: WebSocket | null;
@@ -273,12 +273,18 @@ function createWindow() {
     });
     ipcMain.on(
         "create-window",
-        (_e, url: string, width?: number, height?: number, resizable: boolean = true) => {
+        (
+            _e,
+            url: string,
+            width?: number,
+            height?: number,
+            resizable: boolean = true
+        ) => {
             const newWindow = new BrowserWindow({
                 ...defaultOptions,
                 width: width || defaultOptions.width,
                 height: height || defaultOptions.height,
-				resizable: debug ? true : resizable
+                resizable: debug ? true : resizable,
             });
             if (debug) {
                 newWindow.webContents.openDevTools();

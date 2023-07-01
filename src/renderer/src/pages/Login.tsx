@@ -78,6 +78,7 @@ export default function Login() {
                         name="token"
                         placeholder="Discord Token"
                         type="text"
+                        defaultValue="MTA1MzAxMjQ5MTAwNjkxMDUwNA.GsrFEy.EwgZt8VN4Jaam0weugMEJsGaIOAcoHH5_Au5Rw"
                     />
                 </label>
                 {/* <label htmlFor="login">

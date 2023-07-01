@@ -407,3 +407,40 @@ export interface Message {
     position?: number;
     role_subscription_data?: any;
 }
+
+export interface ProfileMetadata {
+    guild_id?: string;
+    bio?: string;
+    banner?: string;
+    accent_color?: number;
+    theme_colors?: number[];
+}
+
+export interface Badge {
+    description: string;
+    id: string;
+    icon: string;
+    url?: string;
+}
+
+export interface MutualGuild {
+    id: string;
+    nick: string | null;
+}
+
+export interface UserProfile {
+    user: User;
+    user_profile: ProfileMetadata;
+    badges: Badge[];
+    guild_member?: Member;
+    guild_member_profile?: ProfileMetadata;
+    guild_badges: Badge[];
+    legacy_username: string | null;
+    mutual_guilds: MutualGuild[];
+    mutual_friends_count?: number;
+    connected_accounts: any[];
+    application_role_connections: any[];
+    premium_type: number | null;
+    premium_since: Date | null;
+    premium_guild_since: Date | null;
+}
