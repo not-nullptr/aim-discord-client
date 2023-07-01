@@ -54,7 +54,7 @@
     font-family: "Times New Roman", Times, serif;
     font-size: 16px;
     padding: 2px 4px;
-    margin-top: 24px;
+    margin-top: 0px;
     border-top: solid thin #aca899;
     border-left: solid thin #aca899;
     border-bottom: solid thin #ffffff;
@@ -72,4 +72,35 @@
 .input-container::selection {
     background-color: black;
     color: white;
+}
+
+.attachments {
+    padding: 4px;
+}
+
+.attachment-image {
+    max-width: 50%;
+    height: auto;
+}
+
+@media (min-width: 600px) {
+    .attachment-image {
+        max-width: 280px;
+    }
+}
+
+.in-between-container {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    height: 18px;
+    padding: 0px 4px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: solid thin #aca899;
+    box-shadow: inset 1px 1px 0px 0px #fff, inset -1px -1px 0px 0px #ece9d8;
+}
+
+.typing {
+    opacity: 0.6;
 }

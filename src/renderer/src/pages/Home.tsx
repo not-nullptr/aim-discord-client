@@ -4,18 +4,13 @@ import "../css/Home.css";
 import placeholder from "../img/placeholder.png";
 import banner from "../img/banner.png";
 import splashCropped from "../img/splash-cropped.png";
+import { ChannelTypes } from "../../../../src/shared/types/Gateway";
 const { ipcRenderer } = window.require("electron");
 
 const result = (a: any) =>
     a.length > 1
         ? `${a.slice(0, -1).join(", ")} and ${a.slice(-1)}`
         : { 0: "", 1: a[0] }[a.length];
-
-ipcRenderer.on("play-sound", async (_, sound: string) => {
-    const audioPath = await import(`../audio/${sound}.mp3`);
-    const audio = new Audio(audioPath.default);
-    audio.play();
-});
 
 export default function Home() {
     const { state, setState } = useContext(Context);
@@ -25,6 +20,14 @@ export default function Home() {
             ...state,
             title: `${state.initialReady?.user.username}'s Buddy List Window`,
         });
+        ipcRenderer.on("play-sound", async (_, sound: string) => {
+            const audioPath = await import(`../audio/${sound}.mp3`);
+            const audio = new Audio(audioPath.default);
+            audio.play();
+        });
+        return () => {
+            ipcRenderer.removeAllListeners("play-sound");
+        };
     }, [state.initialReady?.user.username]);
     useEffect(() => {
         ipcRenderer.send("set-window-size", 152, 460);
@@ -50,15 +53,9 @@ export default function Home() {
                     marginTop: 2,
                 }}
             >
-                <span className="toolbar-item">
-					My AIM
-				</span>
-				<span className="toolbar-item">
-					People
-				</span>
-				<span className="toolbar-item">
-					Help
-				</span>
+                <span className="toolbar-item">My AIM</span>
+                <span className="toolbar-item">People</span>
+                <span className="toolbar-item">Help</span>
             </div>
             <div
                 style={{
@@ -91,14 +88,16 @@ export default function Home() {
                                 Group Chats (
                                 {
                                     state.initialReady?.private_channels.filter(
-                                        (c) => c.type === 3
+                                        (c) => c.type === ChannelTypes.GROUP_DM
                                     ).length
                                 }
                                 )
                             </summary>
                             <ul style={{ marginTop: 2 }}>
                                 {state.initialReady?.private_channels
-                                    .filter((c) => c.type === 3)
+                                    .filter(
+                                        (c) => c.type === ChannelTypes.GROUP_DM
+                                    )
                                     .map((gc) => (
                                         <li
                                             style={{
@@ -224,36 +223,38 @@ export default function Home() {
                     </li>
                 </ul>
             </div>
-			<div className="horizontal-button-container">
-				<div>
-					<img src={placeholder}/>
-					IM
-				</div>
-				<div>
-					<img src={placeholder}/>
-					Chat
-				</div>
-				<div>
-					<img src={placeholder}/>
-					Write
-				</div>
-				<div onClick={() =>
-					ipcRenderer.send(
-						"create-window",
-						`/buddyinfo`,
-						307,
-						138,
-						//false
-					)
-				}>
-					<img src={placeholder}/>
-					Info
-				</div>
-				<div>
-					<img src={placeholder}/>
-					Setup
-				</div>
-			</div>
+            <div className="horizontal-button-container">
+                <div>
+                    <img src={placeholder} />
+                    IM
+                </div>
+                <div>
+                    <img src={placeholder} />
+                    Chat
+                </div>
+                <div>
+                    <img src={placeholder} />
+                    Write
+                </div>
+                <div
+                    onClick={() =>
+                        ipcRenderer.send(
+                            "create-window",
+                            `/buddyinfo`,
+                            307,
+                            138
+                            //false
+                        )
+                    }
+                >
+                    <img src={placeholder} />
+                    Info
+                </div>
+                <div>
+                    <img src={placeholder} />
+                    Setup
+                </div>
+            </div>
         </div>
     );
 }

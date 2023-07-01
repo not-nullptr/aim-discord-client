@@ -7,11 +7,10 @@ import { Message } from "src/shared/types/Gateway";
 import { req } from "@renderer/util/Rest";
 import { GatewayEvent } from "src/shared/util/Gateway";
 const { ipcRenderer } = window.require("electron");
-import send from "../audio/Send.wav";
-import receive from "../audio/Receive.wav";
 import { State } from "src/shared/types/State";
+import send from "../audio/Send.mp3";
 
-export function convertToMentionName(
+function convertToMentionName(
     message: string,
     state: State,
     generic: string,
@@ -90,8 +89,6 @@ export default function DMs() {
                         setMessages((prev) => [d, ...prev]);
                         if (d.author.id === state.initialReady?.user.id) {
                             new Audio(send).play();
-                        } else {
-                            new Audio(receive).play();
                         }
                     }
                     break;
@@ -172,27 +169,45 @@ export default function DMs() {
             >
                 <div className="chat-container" ref={chatRef}>
                     {messages.map((m) => (
-                        <div key={m.id} className="message-container">
-                            <span
-                                className={`message-author ${
-                                    m.author.id === state.initialReady?.user.id
-                                        ? "self"
-                                        : "other"
-                                }`}
-                            >
-                                {m.author.username}
-                            </span>
-                            {": "}
-                            {
-                                convertToMentionName(
-                                    m.content,
-                                    state,
-                                    "message-content",
-                                    "message-mention"
-                                ).cleanedMessage
-                            }
+                        <div>
+                            <div key={m.id} className="message-container">
+                                <span
+                                    className={`message-author ${
+                                        m.author.id ===
+                                        state.initialReady?.user.id
+                                            ? "self"
+                                            : "other"
+                                    }`}
+                                >
+                                    {m.author.username}
+                                </span>
+                                {": "}
+                                {
+                                    convertToMentionName(
+                                        m.content,
+                                        state,
+                                        "message-content",
+                                        "message-mention"
+                                    ).cleanedMessage
+                                }
+                            </div>
+                            {m.attachments?.length > 0 && (
+                                <div className="attachments">
+                                    {m.attachments?.map((a) => (
+                                        <a href={a.url} target="_blank">
+                                            <img
+                                                className="attachment-image"
+                                                src={a.url}
+                                            ></img>
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
+                </div>
+                <div className="in-between-container">
+                    <div className="typing"></div>
                 </div>
                 <textarea
                     onKeyDown={(event) => {

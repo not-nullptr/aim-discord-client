@@ -83,8 +83,8 @@ const getTypeHandlers = (
         if ((isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf) {
             const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
             new Notification({
-                title: `You've Got Mail!`,
-                body: `${payload.author.username}: ${
+                title: `${payload.author.username} says:`,
+                body: `${
                     convertToMentionName(payload.content, state).cleanedMessage
                 } ${
                     payload.attachments.length > 0
@@ -101,8 +101,9 @@ const getTypeHandlers = (
                         .png()
                         .toBuffer()
                 ),
+                silent: true,
             }).show();
-            win?.webContents.send("play-sound", "YouGotMail");
+            win?.webContents.send("play-sound", "Receive");
         }
         // ) {
         //     new Notification({

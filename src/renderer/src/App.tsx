@@ -33,7 +33,7 @@ export default function App() {
                     <Route path="/" element={<Login />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/message" element={<Message />} />
-					<Route path="/buddyinfo" element={<BuddyInfo />}/>
+                    <Route path="/buddyinfo" element={<BuddyInfo />} />
                 </Routes>
             </HashRouter>
         </Context.Provider>
