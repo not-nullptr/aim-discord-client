@@ -12,6 +12,7 @@ import { WebSocket, MessageEvent } from "ws";
 import { State } from "../shared/types/State";
 import { OpCodes } from "../shared/types/Codes";
 import {
+    ChannelTypes,
     DispatchType,
     IdentifyPacket,
     MessageCreatePacket,
@@ -183,7 +184,9 @@ const getTypeHandlers = (
             });
             noti.on("click", () => {
                 const isDm = state.initialReady?.private_channels.find(
-                    (c) => c.id === payload.channel_id
+                    (c) =>
+                        c.id === payload.channel_id &&
+                        c.type === ChannelTypes.DM
                 );
                 createOrFocusWindow(
                     `/message?id=${payload.channel_id}${
