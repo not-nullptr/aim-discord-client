@@ -19,12 +19,20 @@ function convertToMentionName(
     const mentionRegex = /<@(\d{1,20})>/g;
     let startIndex = 0;
     let cleanedMessage: React.ReactNode[] = [];
+    const headerRegex = /^#{1,3}\s/g;
+    const isHeader = headerRegex.test(message); // hacky, will un-hardcode later
+    const headerStyle = isHeader
+        ? { fontSize: 45 - (message.match(/^#{1,3}/g) ?? [""])[0].length * 8 }
+        : {};
+    if (isHeader) message = message.replace(headerRegex, "");
 
     while (true) {
         const match = mentionRegex.exec(message);
         if (match === null) {
             cleanedMessage.push(
-                <span key={startIndex}>{message.substring(startIndex)}</span>
+                <span key={startIndex} style={headerStyle}>
+                    {message.substring(startIndex)}
+                </span>
             );
             break;
         }
@@ -37,16 +45,20 @@ function convertToMentionName(
 
         if (user) {
             cleanedMessage.push(
-                <span key={startIndex} className={generic}>
+                <span key={startIndex} style={headerStyle} className={generic}>
                     {message.substring(startIndex, endIndex)}
-                    <span className={mention}>@{user.username}</span>
+                    <span className={mention} style={headerStyle}>
+                        @{user.username}
+                    </span>
                 </span>
             );
         } else {
             cleanedMessage.push(
-                <span className={generic} key={startIndex}>
+                <span className={generic} key={startIndex} style={headerStyle}>
                     {message.substring(startIndex, endIndex)}
-                    <span className={mention}>&lt;@{mentionId}&gt;</span>
+                    <span className={mention} style={headerStyle}>
+                        &lt;@{mentionId}&gt;
+                    </span>
                 </span>
             );
         }
@@ -169,18 +181,17 @@ export default function DMs() {
             >
                 <div className="chat-container" ref={chatRef}>
                     {messages.map((m) => (
-                        <div>
-                            <div key={m.id} className="message-container">
-                                <span
-                                    className={`message-author ${
-                                        m.author.id ===
-                                        state.initialReady?.user.id
-                                            ? "self"
-                                            : "other"
-                                    }`}
-                                >
-                                    {m.author.username}
-                                </span>
+                        <div key={m.id} className="message-container">
+                            <span
+                                className={`message-author ${
+                                    m.author.id === state.initialReady?.user.id
+                                        ? "self"
+                                        : "other"
+                                }`}
+                            >
+                                {m.author.username}
+                            </span>
+                            <div style={{ display: "inline" }}>
                                 {": "}
                                 {
                                     convertToMentionName(
@@ -191,18 +202,6 @@ export default function DMs() {
                                     ).cleanedMessage
                                 }
                             </div>
-                            {m.attachments?.length > 0 && (
-                                <div className="attachments">
-                                    {m.attachments?.map((a) => (
-                                        <a href={a.url} target="_blank">
-                                            <img
-                                                className="attachment-image"
-                                                src={a.url}
-                                            ></img>
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
                         </div>
                     ))}
                 </div>

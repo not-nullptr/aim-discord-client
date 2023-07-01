@@ -55,7 +55,20 @@ export default function Home() {
             >
                 <span className="toolbar-item">My AIM</span>
                 <span className="toolbar-item">People</span>
-                <span className="toolbar-item">Help</span>
+                <span
+                    className="toolbar-item"
+                    onClick={() =>
+                        ipcRenderer.send(
+                            "create-window",
+                            `/about`,
+                            400,
+                            200,
+                            false
+                        )
+                    }
+                >
+                    Help
+                </span>
             </div>
             <div
                 style={{
@@ -242,8 +255,8 @@ export default function Home() {
                             "create-window",
                             `/buddyinfo`,
                             307,
-                            138
-                            //false
+                            138,
+                            false
                         )
                     }
                 >
