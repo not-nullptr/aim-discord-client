@@ -7,6 +7,7 @@ import { useState } from "react";
 import Home from "./pages/Home";
 import Message from "./pages/Message";
 import { IpcRenderer } from "electron";
+import BuddyInfo from "./pages/BuddyInfo";
 const { ipcRenderer }: { ipcRenderer: IpcRenderer } =
     window.require("electron");
 
@@ -32,6 +33,7 @@ export default function App() {
                     <Route path="/" element={<Login />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/message" element={<Message />} />
+					<Route path="/buddyinfo" element={<BuddyInfo />}/>
                 </Routes>
             </HashRouter>
         </Context.Provider>

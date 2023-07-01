@@ -1,6 +1,7 @@
 import { useContext, useEffect } from "react";
 import { Context } from "../util/Context";
 import "../css/Home.css";
+import placeholder from "../img/placeholder.png";
 import banner from "../img/banner.png";
 import splashCropped from "../img/splash-cropped.png";
 const { ipcRenderer } = window.require("electron");
@@ -40,7 +41,7 @@ export default function Home() {
                 height: "calc(100vh - 28px)",
             }}
         >
-            {/* <div
+            <div
                 style={{
                     height: 14,
                     marginLeft: 8,
@@ -49,8 +50,16 @@ export default function Home() {
                     marginTop: 2,
                 }}
             >
-                My AIM
-            </div> */}
+                <span className="toolbar-item">
+					My AIM
+				</span>
+				<span className="toolbar-item">
+					People
+				</span>
+				<span className="toolbar-item">
+					Help
+				</span>
+            </div>
             <div
                 style={{
                     marginTop: 3,
@@ -215,6 +224,36 @@ export default function Home() {
                     </li>
                 </ul>
             </div>
+			<div className="horizontal-button-container">
+				<div>
+					<img src={placeholder}/>
+					IM
+				</div>
+				<div>
+					<img src={placeholder}/>
+					Chat
+				</div>
+				<div>
+					<img src={placeholder}/>
+					Write
+				</div>
+				<div onClick={() =>
+					ipcRenderer.send(
+						"create-window",
+						`/buddyinfo`,
+						307,
+						138,
+						//false
+					)
+				}>
+					<img src={placeholder}/>
+					Info
+				</div>
+				<div>
+					<img src={placeholder}/>
+					Setup
+				</div>
+			</div>
         </div>
     );
 }

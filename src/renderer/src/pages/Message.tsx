@@ -17,7 +17,7 @@ export function convertToMentionName(
     generic: string,
     mention: string
 ) {
-    const mentionRegex = /<@(\d{19})>/g;
+    const mentionRegex = /<@(\d{1,20})>/g;
     let startIndex = 0;
     let cleanedMessage: React.ReactNode[] = [];
 
@@ -47,7 +47,7 @@ export function convertToMentionName(
             cleanedMessage.push(
                 <span className={generic} key={startIndex}>
                     {message.substring(startIndex, endIndex)}
-                    <span className={mention}>@{mentionId}</span>
+                    <span className={mention}>&lt;@{mentionId}&gt;</span>
                 </span>
             );
         }
@@ -124,7 +124,7 @@ export default function DMs() {
             ...state,
             title: `${
                 dmMut.current?.name || result(users?.map((u) => u?.username))
-            } - Insant Message`,
+            } - Instant Message`,
         });
 
         req<Message[]>(

@@ -273,11 +273,12 @@ function createWindow() {
     });
     ipcMain.on(
         "create-window",
-        (_e, url: string, width?: number, height?: number) => {
+        (_e, url: string, width?: number, height?: number, resizable: boolean = true) => {
             const newWindow = new BrowserWindow({
                 ...defaultOptions,
                 width: width || defaultOptions.width,
                 height: height || defaultOptions.height,
+				resizable: debug ? true : resizable
             });
             if (debug) {
                 newWindow.webContents.openDevTools();
@@ -333,7 +334,7 @@ function createWindow() {
     //     }
     // );
     ipcMain.on("set-window-size", (_event, width: number, height: number) => {
-        win?.setSize(width, height);
+        BrowserWindow.fromWebContents(_event.sender)?.setSize(width, height);
     });
 
     ipcMain.on("is-main-window", (_event) => {});

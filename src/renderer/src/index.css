@@ -171,6 +171,20 @@ input[type="password"] {
     border: solid thin #7f9db9;
 }
 
+.button-frame {
+	border: ridge;
+	border-width: 1px;
+	border-color: black;
+	display: flex;
+	align-items: center;
+  	justify-content: center;
+}
+
+.button-frame > button {
+	margin: 0;
+	padding: 0;
+}
+
 button,
 input[type="button"],
 input[type="submit"] {
@@ -190,6 +204,34 @@ input[type="submit"]:hover {
     background-image: url("./img/ui/button-hover.png");
     border-left: solid 2px #fcd279;
     border-right: solid 2px #fcd279;
+}
+
+.toolbar-item {
+	margin-right: 13px;
+}
+
+.horizontal-button-container {
+	margin: 5px;
+	width: 130px;
+	align-self: center;
+	display: flex;
+	text-align: center;
+	justify-content: space-between;
+}
+
+.horizontal-button-container > div {
+	font-size: 10px;
+	font-family: sans-serif;
+	width: 22px;
+}
+
+.horizontal-button-container > div > img {
+	padding-bottom: 3px;
+	width: 22px;
+	height: 22px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 button:active,

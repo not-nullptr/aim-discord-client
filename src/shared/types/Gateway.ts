@@ -40,11 +40,11 @@ export interface User {
     username: string;
     discriminator: string;
     global_name?: string;
-    avatar: string;
+    avatar: string | null;
     bot?: boolean;
     system?: boolean;
     mfa_enabled?: boolean;
-    banner?: string;
+    banner?: string | null;
     accent_color?: number;
     locale?: string;
     verified?: boolean;
