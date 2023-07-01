@@ -41,7 +41,7 @@ process.env.PUBLIC = app.isPackaged
     ? process.env.DIST
     : path.join(process.env.DIST, "../public");
 
-const debug = true;
+const debug = false;
 
 let win: BrowserWindow | null;
 let socket: WebSocket | null;
@@ -50,6 +50,7 @@ let windows: {
     id: number;
     isMain: boolean;
 }[] = [];
+const notis: Notification[] = [];
 
 const defaultOptions: Electron.BrowserWindowConstructorOptions = {
     width: 216,
@@ -152,6 +153,7 @@ const getTypeHandlers = (
         const mentionsEveryone = payload.mention_everyone;
         const isSelf = payload.author.id === state.initialReady?.user.id;
         if ((isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf) {
+            notis.forEach((n) => n.close());
             const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
             const noti = new Notification({
                 title: `${payload.author.username} says:`,
@@ -196,8 +198,8 @@ const getTypeHandlers = (
                     359
                 );
             });
+            notis.push(noti);
             noti.show();
-
             win?.webContents.send("play-sound", "Receive");
         }
         // ) {
