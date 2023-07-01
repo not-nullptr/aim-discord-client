@@ -78,10 +78,20 @@ export default function DMs() {
     const [params] = useSearchParams();
     const dmMut = useRef(
         state.initialReady?.private_channels.find((c) =>
-            params.get("type") === "dm"
-                ? c.recipient_ids?.length === 1 &&
-                  c.recipient_ids?.[0] === params.get("id")
-                : c.id === params.get("id")
+            // params.get("type") === "dm"
+            //     ? c.recipient_ids?.length === 1 &&
+            //       c.recipient_ids?.[0] === params.get("id")
+            //     : c.id === params.get("id")
+            {
+                if (params.get("type") === "dm") {
+                    return (
+                        c.recipient_ids?.length === 1 &&
+                        c.recipient_ids?.[0] === params.get("id")
+                    );
+                } else {
+                    return c.id === params.get("id");
+                }
+            }
         )
     );
     const chatRef = useRef<HTMLDivElement>(null);
@@ -92,6 +102,14 @@ export default function DMs() {
         )
     );
     useEffect(() => {
+        if (params.get("type") === "dm" && !dmMut.current) {
+            req<any>(state?.token, `/users/@me/channels`, "POST", {
+                recipients: [params.get("id")],
+            }).then((res) => {
+                dmMut.current = res;
+                setMessages([]);
+            });
+        }
         ipcRenderer.on("gateway-dispatch", (_, data) => {
             console.log(data);
             const { t, d } = data as GatewayEvent<any>;
@@ -184,6 +202,21 @@ export default function DMs() {
                         <div key={m.id}>
                             <div className="message-container">
                                 <span
+                                    onClick={() =>
+                                        ipcRenderer.send(
+                                            "create-window",
+                                            "/message?id=" +
+                                                state.initialReady?.private_channels.find(
+                                                    (p) =>
+                                                        p.recipient_ids?.[0] ===
+                                                            m.author.id &&
+                                                        p.recipient_ids
+                                                            ?.length === 1
+                                                )?.id,
+                                            611,
+                                            359
+                                        )
+                                    }
                                     className={`message-author ${
                                         m.author.id ===
                                         state.initialReady?.user.id

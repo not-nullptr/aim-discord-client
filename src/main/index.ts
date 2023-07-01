@@ -50,9 +50,26 @@ let windows: {
     isMain: boolean;
 }[] = [];
 
-function windowFromChannelId(channelId: string): BrowserWindow | undefined {
+const defaultOptions: Electron.BrowserWindowConstructorOptions = {
+    width: 216,
+    height: 394,
+    // width: 1000,
+    // height: 800,
+    frame: false,
+    icon: path.join(__dirname, "/resources/favicon.ico"),
+    // resizable: false,
+    webPreferences: {
+        devTools: true,
+        preload: path.join(__dirname, "../preload/index.js"),
+        nodeIntegration: true,
+        contextIsolation: false,
+    },
+};
+
+function findWindowFromPath(path: string): BrowserWindow | undefined {
     for (const window of BrowserWindow.getAllWindows()) {
-        if (window.webContents.getURL().includes(`/message?id=${channelId}`)) {
+        const url = new URL(window.webContents.getURL());
+        if (url.hash.replace("#", "") === path) {
             return window;
         }
     }
@@ -64,6 +81,57 @@ function setState(newState: any) {
     BrowserWindow.getAllWindows().forEach((window) => {
         window.webContents.send("set-state", newState);
     });
+}
+
+function createPopupWindow(
+    url: string,
+    width?: number,
+    height?: number,
+    resizable: boolean = true
+) {
+    const newWindow = new BrowserWindow({
+        ...defaultOptions,
+        width: width || defaultOptions.width,
+        height: height || defaultOptions.height,
+        resizable: debug ? true : resizable,
+    });
+    if (debug) {
+        newWindow.webContents.openDevTools();
+    }
+
+    if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+        newWindow.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#${url}`);
+    } else {
+        const indexPath = join(__dirname, "../renderer/index.html");
+        newWindow.loadURL(`file://${indexPath}#${url}`);
+    }
+    newWindow.on("blur", () => {
+        newWindow?.webContents.executeJavaScript(
+            `document.querySelector('.titlebar').classList.add('inactive');`
+        );
+    });
+
+    newWindow.on("focus", () => {
+        newWindow?.webContents.executeJavaScript(
+            `document.querySelector('.titlebar').classList.remove('inactive');`
+        );
+    });
+    newWindow.removeMenu();
+}
+
+function createOrFocusWindow(
+    url: string,
+    width?: number,
+    height?: number,
+    resizable: boolean = true
+) {
+    const existingWindow = findWindowFromPath(url);
+    if (existingWindow) {
+        existingWindow.show();
+        existingWindow.focus();
+    } else {
+        createPopupWindow(url, width, height, resizable);
+    }
 }
 
 const getTypeHandlers = (
@@ -114,17 +182,16 @@ const getTypeHandlers = (
                 silent: true,
             });
             noti.on("click", () => {
-                const window = windowFromChannelId(payload.channel_id);
-                if (window) {
-                    window.show();
-                    window.focus();
-                } else {
-                    createPopupWindow(
-                        `/message?id=${payload.channel_id}`,
-                        611,
-                        359
-                    );
-                }
+                const isDm = state.initialReady?.private_channels.find(
+                    (c) => c.id === payload.channel_id
+                );
+                createOrFocusWindow(
+                    `/message?id=${payload.channel_id}${
+                        isDm ? `&type=dm` : ""
+                    }`,
+                    611,
+                    359
+                );
             });
             noti.show();
 
@@ -152,60 +219,6 @@ const getTypeHandlers = (
         });
     },
 });
-
-// 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
-
-const defaultOptions: Electron.BrowserWindowConstructorOptions = {
-    width: 216,
-    height: 394,
-    // width: 1000,
-    // height: 800,
-    frame: false,
-    icon: path.join(__dirname, "/resources/favicon.ico"),
-    // resizable: false,
-    webPreferences: {
-        devTools: true,
-        preload: path.join(__dirname, "../preload/index.js"),
-        nodeIntegration: true,
-        contextIsolation: false,
-    },
-};
-
-function createPopupWindow(
-    url: string,
-    width?: number,
-    height?: number,
-    resizable: boolean = true
-) {
-    const newWindow = new BrowserWindow({
-        ...defaultOptions,
-        width: width || defaultOptions.width,
-        height: height || defaultOptions.height,
-        resizable: debug ? true : resizable,
-    });
-    if (debug) {
-        newWindow.webContents.openDevTools();
-    }
-
-    if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-        newWindow.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#${url}`);
-    } else {
-        const indexPath = join(__dirname, "../renderer/index.html");
-        newWindow.loadURL(`file://${indexPath}#${url}`);
-    }
-    newWindow.on("blur", () => {
-        newWindow?.webContents.executeJavaScript(
-            `document.querySelector('.titlebar').classList.add('inactive');`
-        );
-    });
-
-    newWindow.on("focus", () => {
-        newWindow?.webContents.executeJavaScript(
-            `document.querySelector('.titlebar').classList.remove('inactive');`
-        );
-    });
-    newWindow.removeMenu();
-}
 
 function createWindow() {
     console.log(path.join(__dirname, "/resources/favicon.ico"));
@@ -346,9 +359,12 @@ function createWindow() {
             url: string,
             width?: number,
             height?: number,
-            resizable: boolean = true
+            resizable: boolean = true,
+            checkForDupes: boolean = true
         ) => {
-            createPopupWindow(url, width, height, resizable);
+            checkForDupes
+                ? createOrFocusWindow(url, width, height, resizable)
+                : createPopupWindow(url, width, height, resizable);
         }
     );
     ipcMain.on("get-state", (_e) => {
