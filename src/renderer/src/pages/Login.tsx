@@ -62,6 +62,10 @@ export default function Login() {
                         "start-gateway",
                         (e.target as any).token.value
                     );
+                    setState({
+                        ...state,
+                        token: (e.target as any).token.value,
+                    });
                     waitForInitial().then(() => {
                         navigate("/home");
                     });

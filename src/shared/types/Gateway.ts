@@ -108,6 +108,7 @@ export interface Channel {
     user_limit?: number;
     rate_limit_per_user?: number;
     recipients?: User[];
+    recipient_ids?: string[];
     icon?: string;
     managed?: boolean;
     application_id?: string;
@@ -297,4 +298,36 @@ export interface ReferencedMessage {
     channel_id: string;
     author: Author;
     attachments: Attachment[];
+}
+
+export interface Message {
+    id: string;
+    channel_id: string;
+    author: User;
+    content: string;
+    timestamp: Date;
+    edited_timestamp: Date | null;
+    tts: boolean;
+    mention_everyone: boolean;
+    mentions: User[];
+    mention_roles: string[];
+    attachments: Attachment[];
+    embeds: any[];
+    reactions?: any[];
+    nonce?: string | number;
+    pinned: boolean;
+    webhook_id?: string | null;
+    type: number;
+    activity?: any;
+    application?: any;
+    application_id?: string;
+    message_reference?: MessageReference;
+    flags?: number;
+    referenced_message?: Message;
+    interaction?: any;
+    thread?: Channel;
+    components?: any[];
+    stickers?: Sticker[];
+    position?: number;
+    role_subscription_data?: any;
 }

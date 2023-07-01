@@ -1,4 +1,4 @@
-import { Routes, Route, HashRouter, useNavigate } from "react-router-dom";
+import { Routes, Route, HashRouter } from "react-router-dom";
 import Login from "./pages/Login";
 import Titlebar from "./components/Titlebar";
 import { Context } from "./util/Context";

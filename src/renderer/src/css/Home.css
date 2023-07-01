@@ -40,3 +40,8 @@ li.selected {
     background-color: yellow;
     outline: dotted 1px black;
 }
+
+li details {
+    margin-bottom: 6px;
+    margin-top: 6px;
+}

@@ -3,7 +3,6 @@ import {
     app,
     BrowserWindow,
     ipcMain,
-    ipcRenderer,
     nativeImage,
     Notification,
 } from "electron";
@@ -23,7 +22,6 @@ import {
     GatewayEvent,
     convertToMentionName,
 } from "../shared/util/Gateway";
-import { play } from "sound-play";
 
 // The built directory structure
 //
@@ -74,19 +72,14 @@ const getTypeHandlers = (
             state.initialReady?.private_channels.find(
                 (c) => c.id === payload.channel_id
             ) !== undefined;
-        const focused =
-            win?.webContents.executeJavaScript(`document.hasFocus()`);
-        const ownMessage = payload.author.id === state.initialReady?.user.id;
+        // const focused =
+        // win?.webContents.executeJavaScript(`document.hasFocus()`);
+        // const ownMessage = payload.author.id === state.initialReady?.user.id;
         const mentionsEveryone = payload.mention_everyone;
-
-        if (
-            (isMentioned || dmOrGroupChat || mentionsEveryone) &&
-            !focused &&
-            !ownMessage
-        ) {
-            play("./audio/YouGotMail.mp3");
+        const isSelf = payload.author.id === state.initialReady?.user.id;
+        if ((isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf) {
             const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
-            ipcRenderer.send("notification", {
+            new Notification({
                 title: `You've Got Mail!`,
                 body: `${payload.author.username}: ${
                     convertToMentionName(payload.content, state).cleanedMessage
@@ -97,9 +90,31 @@ const getTypeHandlers = (
                           }>`
                         : ""
                 }`,
-                icon: iconUrl,
-            });
+                icon: nativeImage.createFromBuffer(
+                    await sharp(
+                        await (await fetch(iconUrl as string)).arrayBuffer()
+                    )
+                        .resize(256, 256)
+                        .png()
+                        .toBuffer()
+                ),
+            }).show();
+            win?.webContents.send("play-sound", "YouGotMail");
         }
+        // ) {
+        //     new Notification({
+        //         title: `You've Got Mail!`,
+        //         body: `${payload.author.username}: ${
+        //             convertToMentionName(payload.content, state).cleanedMessage
+        //         } ${
+        //             payload.attachments.length > 0
+        //                 ? `<${payload.attachments.length} attachment${
+        //                       payload.attachments.length === 1 ? "" : "s"
+        //                   }>`
+        //                 : ""
+        //         }`,
+        //     }).show();
+        // }
     },
     READY: (payload: ReadyPacket) => {
         setState({
@@ -229,6 +244,9 @@ function createWindow() {
             const data: GatewayEvent<any> = JSON.parse(event.data);
             switch (data.op) {
                 case OpCodes.DISPATCH: {
+                    BrowserWindow.getAllWindows().forEach((window) => {
+                        window.webContents.send("gateway-dispatch", data);
+                    });
                     const handler = (getTypeHandlers(state!) as any)[
                         data.t as any
                     ] as (payload: any) => any | undefined;
@@ -317,6 +335,9 @@ function createWindow() {
     ipcMain.on("set-window-size", (_event, width: number, height: number) => {
         win?.setSize(width, height);
     });
+
+    ipcMain.on("is-main-window", (_event) => {});
+
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
         win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     } else {
