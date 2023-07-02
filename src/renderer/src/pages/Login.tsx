@@ -4,6 +4,11 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Context } from "../util/Context";
 import "../css/Login.css";
 import { useNavigate } from "react-router-dom";
+import {
+    createWindow,
+    getDebugToken,
+    startGateway,
+} from "../../../../src/shared/util/Window";
 const { ipcRenderer } = window.require("electron");
 
 export default function Login() {
@@ -22,16 +27,16 @@ export default function Login() {
     useEffect(() => {
         initialRef.current = state?.initialReady;
     }, [state]);
-    function waitForInitial(): Promise<any> {
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (initialRef.current !== null) {
-                    clearInterval(interval);
-                    resolve(initialRef.current);
-                }
-            }, 100);
-        });
-    }
+    // function waitForInitial(): Promise<any> {
+    //     return new Promise((resolve) => {
+    //         const interval = setInterval(() => {
+    //             if (initialRef.current !== null) {
+    //                 clearInterval(interval);
+    //                 resolve(initialRef.current);
+    //             }
+    //         }, 100);
+    //     });
+    // }
     const navigate = useNavigate();
     return (
         <div
@@ -58,17 +63,15 @@ export default function Login() {
             <form
                 onSubmit={async (e) => {
                     e.preventDefault();
-                    ipcRenderer.send(
-                        "start-gateway",
-                        (e.target as any).token.value
-                    );
+                    startGateway((e.target as any).token.value);
                     setState({
                         ...state,
                         token: (e.target as any).token.value,
                     });
-                    waitForInitial().then(() => {
-                        navigate("/home");
-                    });
+                    // waitForInitial().then(() => {
+                    //     navigate("/home");
+                    // });
+                    createWindow("/loading", 214, 266, false, true);
                 }}
                 className="login-form"
             >
@@ -78,7 +81,7 @@ export default function Login() {
                         name="token"
                         placeholder="Discord Token"
                         type="text"
-                        defaultValue={ipcRenderer.sendSync("get-debug-token")}
+                        defaultValue={getDebugToken()}
                     />
                 </label>
                 {/* <label htmlFor="login">

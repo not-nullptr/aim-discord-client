@@ -2,7 +2,8 @@ export async function req<T>(
     token: string,
     url: string,
     method: string,
-    body?: any
+    body?: any,
+    useCors: boolean = true
 ) {
     const res = await fetch(`https://discord.com/api/v9${url}`, {
         method,
@@ -11,6 +12,7 @@ export async function req<T>(
             "Content-Type": "application/json",
             Authorization: token,
         },
+        mode: useCors ? "cors" : "no-cors",
     });
 
     if (res.status >= 400) {

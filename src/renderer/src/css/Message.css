@@ -10,6 +10,7 @@
     width: calc(100% - 10px);
     line-break: anywhere;
     overflow: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column-reverse;
 }
@@ -103,4 +104,16 @@
 
 .typing {
     opacity: 0.6;
+}
+
+.message-content * {
+    display: inline;
+}
+
+code,
+code * {
+    background-color: #aca899;
+    color: white;
+    padding: 2px 6px;
+    font-family: "Courier New", Courier, monospace;
 }

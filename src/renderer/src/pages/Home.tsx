@@ -5,6 +5,7 @@ import placeholder from "../img/placeholder.png";
 import banner from "../img/banner.png";
 import splashCropped from "../img/splash-cropped.png";
 import { ChannelTypes } from "../../../../src/shared/types/Gateway";
+import { createWindow } from "../../../../src/shared/util/Window";
 const { ipcRenderer } = window.require("electron");
 
 const result = (a: any) =>
@@ -29,10 +30,6 @@ export default function Home() {
             ipcRenderer.removeAllListeners("play-sound");
         };
     }, [state.initialReady?.user.username]);
-    useEffect(() => {
-        ipcRenderer.send("set-window-size", 152, 460);
-    }, []);
-    // hack
     return (
         <div
             style={{
@@ -55,20 +52,7 @@ export default function Home() {
             >
                 <span className="toolbar-item">My AIM</span>
                 <span className="toolbar-item">People</span>
-                <span
-                    className="toolbar-item"
-                    onClick={() =>
-                        ipcRenderer.send(
-                            "create-window",
-                            `/about`,
-                            400,
-                            200,
-                            false
-                        )
-                    }
-                >
-                    Help
-                </span>
+                <span className="toolbar-item">Help</span>
             </div>
             <div
                 style={{
@@ -82,7 +66,13 @@ export default function Home() {
                     gap: 8,
                 }}
             >
-                <img src={banner} style={{ width: 143 }} />
+                <img
+                    src={banner}
+                    onDoubleClick={() =>
+                        createWindow("/loading", 214, 266, false, false)
+                    }
+                    style={{ width: 143 }}
+                />
                 <img src={splashCropped} />
             </div>
             <div
@@ -117,8 +107,7 @@ export default function Home() {
                                                 marginTop: -2,
                                             }}
                                             onDoubleClick={() => {
-                                                ipcRenderer.send(
-                                                    "create-window",
+                                                createWindow(
                                                     `/message?id=${gc.id}`,
                                                     611,
                                                     359
@@ -175,8 +164,7 @@ export default function Home() {
                                     .map((x) => (
                                         <li
                                             onDoubleClick={() => {
-                                                ipcRenderer.send(
-                                                    "create-window",
+                                                createWindow(
                                                     `/message?id=${x.id}&type=dm`,
                                                     611,
                                                     359
@@ -228,7 +216,7 @@ export default function Home() {
                                             target.classList.add("selected");
                                         }}
                                     >
-                                        {x.properties.name}
+                                        {x.properties?.name}
                                     </li>
                                 ))}
                             </ul>
@@ -250,15 +238,7 @@ export default function Home() {
                     Write
                 </div>
                 <div
-                    onClick={() =>
-                        ipcRenderer.send(
-                            "create-window",
-                            `/buddyinfo`,
-                            307,
-                            138,
-                            false
-                        )
-                    }
+                    onClick={() => createWindow(`/buddyinfo`, 307, 138, false)}
                 >
                     <img src={placeholder} />
                     Info

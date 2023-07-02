@@ -1,0 +1,16 @@
+.splash {
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 160px;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-content * {
+    margin-top: 6px;
+    padding: 0px 18px;
+}

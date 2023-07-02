@@ -3,6 +3,8 @@ import { Context } from "../util/Context";
 import { UserProfile } from "src/shared/types/Gateway";
 import { req } from "@renderer/util/Rest";
 import Divider from "@renderer/components/Divider";
+import { closeWindow } from "../../../../src/shared/util/Window";
+import { setWindowSize } from "./../../../shared/util/Window";
 const { ipcRenderer } = window.require("electron");
 
 export default function BuddyInfo() {
@@ -45,7 +47,7 @@ export default function BuddyInfo() {
         if (!userId) {
             notFoundBuddy.user.username = buddyName;
             setFoundBuddy(notFoundBuddy);
-            ipcRenderer.send("set-window-size", 489, 365);
+            setWindowSize(489, 365);
             return;
         }
 
@@ -53,7 +55,7 @@ export default function BuddyInfo() {
             .then((res) => {
                 console.log(res);
                 setFoundBuddy(res);
-                ipcRenderer.send("set-window-size", 489, 365);
+                setWindowSize(489, 365);
 
                 setState({
                     ...state,
@@ -63,7 +65,7 @@ export default function BuddyInfo() {
             .catch(() => {
                 notFoundBuddy.user.username = buddyName;
                 setFoundBuddy(notFoundBuddy);
-                ipcRenderer.send("set-window-size", 489, 365);
+                setWindowSize(489, 365);
             });
     }
 
@@ -114,7 +116,7 @@ export default function BuddyInfo() {
                                 minWidth: "63px",
                                 minHeight: "20px",
                             }}
-                            onClick={() => ipcRenderer.send("close-window")}
+                            onClick={() => closeWindow()}
                         >
                             Close
                         </button>

@@ -5,6 +5,7 @@ import {
     ipcMain,
     nativeImage,
     Notification,
+    shell,
 } from "electron";
 import path, { join } from "node:path";
 import sharp from "sharp";
@@ -100,7 +101,10 @@ function createPopupWindow(
     if (debug) {
         newWindow.webContents.openDevTools();
     }
-
+    newWindow.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url);
+        return { action: "deny" };
+    });
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
         newWindow.loadURL(`${process.env["ELECTRON_RENDERER_URL"]}#${url}`);
     } else {
@@ -152,54 +156,60 @@ const getTypeHandlers = (
         // const ownMessage = payload.author.id === state.initialReady?.user.id;
         const mentionsEveryone = payload.mention_everyone;
         const isSelf = payload.author.id === state.initialReady?.user.id;
+        const isFocused = findWindowFromPath(
+            "/message?id=" + payload.channel_id
+        )?.isFocused();
         if ((isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf) {
-            notis.forEach((n) => n.close());
-            const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
-            const noti = new Notification({
-                title: `${payload.author.username} says:`,
-                body: `${
-                    convertToMentionName(payload.content, state).cleanedMessage
-                } ${
-                    payload.attachments.length > 0
-                        ? `<${payload.attachments.length} attachment${
-                              payload.attachments.length === 1 ? "" : "s"
-                          }>`
-                        : ""
-                }`,
-                icon: await (async () => {
-                    try {
-                        return nativeImage.createFromBuffer(
-                            await sharp(
-                                await (
-                                    await fetch(iconUrl as string)
-                                ).arrayBuffer()
-                            )
-                                .resize(256, 256)
-                                .png()
-                                .toBuffer()
-                        );
-                    } catch {
-                        return undefined;
-                    }
-                })(),
-                silent: true,
-            });
-            noti.on("click", () => {
-                const isDm = state.initialReady?.private_channels.find(
-                    (c) =>
-                        c.id === payload.channel_id &&
-                        c.type === ChannelTypes.DM
-                );
-                createOrFocusWindow(
-                    `/message?id=${payload.channel_id}${
-                        isDm ? `&type=dm` : ""
+            if (!isFocused) {
+                notis.forEach((n) => n.close());
+                const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
+                const noti = new Notification({
+                    title: `${payload.author.username} says:`,
+                    body: `${
+                        convertToMentionName(payload.content, state)
+                            .cleanedMessage
+                    } ${
+                        payload.attachments.length > 0
+                            ? `<${payload.attachments.length} attachment${
+                                  payload.attachments.length === 1 ? "" : "s"
+                              }>`
+                            : ""
                     }`,
-                    611,
-                    359
-                );
-            });
-            notis.push(noti);
-            noti.show();
+                    icon: await (async () => {
+                        try {
+                            return nativeImage.createFromBuffer(
+                                await sharp(
+                                    await (
+                                        await fetch(iconUrl as string)
+                                    ).arrayBuffer()
+                                )
+                                    .resize(256, 256)
+                                    .png()
+                                    .toBuffer()
+                            );
+                        } catch {
+                            return undefined;
+                        }
+                    })(),
+                    silent: true,
+                });
+                noti.on("click", () => {
+                    const isDm = state.initialReady?.private_channels.find(
+                        (c) =>
+                            c.id === payload.channel_id &&
+                            c.type === ChannelTypes.DM
+                    );
+                    createOrFocusWindow(
+                        `/message?id=${payload.channel_id}${
+                            isDm ? `&type=dm` : ""
+                        }`,
+                        611,
+                        359
+                    );
+                });
+                notis.push(noti);
+                noti.show();
+            }
             win?.webContents.send("play-sound", "Receive");
         }
         // ) {
@@ -226,7 +236,6 @@ const getTypeHandlers = (
 });
 
 function createWindow() {
-    console.log(path.join(__dirname, "/resources/favicon.ico"));
     win = new BrowserWindow(defaultOptions);
     windows.push({
         id: win.id,
@@ -235,6 +244,10 @@ function createWindow() {
     if (debug) {
         win.webContents.openDevTools();
     }
+    win.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url);
+        return { action: "deny" };
+    });
     win.on("blur", () => {
         win?.webContents.executeJavaScript(`
       document.querySelector('.titlebar').classList.add('inactive');
@@ -387,23 +400,50 @@ function createWindow() {
                 window.close();
             });
     });
-    // ipcMain.handle(
-    //     "convert-to-ico",
-    //     async (event, icon: string): Promise<Electron.NativeImage> => {
-    //         return await sharp(await (await fetch(icon)).arrayBuffer())
-    //             .resize(256, 256)
-    //             .png()
-    //             .toBuffer()
-    //             .then((data) => {
-    //                 return nativeImage.createFromBuffer(data);
-    //             });
-    //     }
-    // );
+    ipcMain.on("close-windows-by-path", (_e, path: string) => {
+        BrowserWindow.getAllWindows().forEach((window) => {
+            const url = new URL(window.webContents.getURL());
+            if (url.hash.replace("#", "") === path) {
+                window.close();
+            }
+        });
+    });
+    ipcMain.on(
+        "redirect-windows-by-path",
+        (_e, origPath: string, destPath: string) => {
+            BrowserWindow.getAllWindows().forEach((window) => {
+                const url = new URL(window.webContents.getURL());
+                if (url.hash.replace("#", "") === origPath) {
+                    if (is.dev) {
+                        window.loadURL(
+                            `${process.env["ELECTRON_RENDERER_URL"]}#${destPath}`
+                        );
+                    } else {
+                        window.loadURL(
+                            join(
+                                __dirname,
+                                `../renderer/index.html#${destPath}`
+                            )
+                        );
+                    }
+                }
+            });
+        }
+    );
+    ipcMain.on("maximize-window", (_e) => {
+        const window = BrowserWindow.fromWebContents(_e.sender);
+        if (window?.isMaximized()) {
+            window?.unmaximize();
+        } else {
+            window?.maximize();
+        }
+    });
+    ipcMain.on("minimize-window", (_e) => {
+        BrowserWindow.fromWebContents(_e.sender)?.minimize();
+    });
     ipcMain.on("set-window-size", (_event, width: number, height: number) => {
         BrowserWindow.fromWebContents(_event.sender)?.setSize(width, height);
     });
-
-    ipcMain.on("is-main-window", (_event) => {});
 
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
         win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
