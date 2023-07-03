@@ -42,7 +42,11 @@ export default function Loading() {
                 }}
             />
             <div className="loading-content">
-                <div>nullptr</div>
+                <div>
+                    {Buffer.from(state.token?.split(".")[0], "base64").toString(
+                        "utf-8"
+                    )}
+                </div>
                 <div>
                     {!state.initialReady?.user.username
                         ? "Connecting to gateway..."

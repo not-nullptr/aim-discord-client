@@ -79,6 +79,18 @@ export default function DMs() {
             : { 0: "", 1: a?.[0] }[a?.length];
     const { state, setState } = useContext(Context);
     const [params] = useSearchParams();
+    const [dm, setDm] = useState(
+        state.initialReady?.private_channels.find((c) => {
+            if (params.get("type") === "dm") {
+                return (
+                    c.recipient_ids?.length === 1 &&
+                    c.recipient_ids?.[0] === params.get("id")
+                );
+            } else {
+                return c.id === params.get("id");
+            }
+        })
+    );
     const dmMut = useRef(
         state.initialReady?.private_channels.find((c) =>
             // params.get("type") === "dm"
@@ -105,11 +117,14 @@ export default function DMs() {
         )
     );
     useEffect(() => {
+        setDm(dmMut.current);
+    }, [dmMut.current]);
+    useEffect(() => {
         if (params.get("type") === "dm" && !dmMut.current) {
             req<any>(state?.token, `/users/@me/channels`, "POST", {
                 recipients: [params.get("id")],
             }).then((res) => {
-                dmMut.current = res;
+                setDm(res);
                 setMessages([]);
             });
         }
@@ -118,7 +133,7 @@ export default function DMs() {
             const { t, d } = data as GatewayEvent<any>;
             switch (t) {
                 case "MESSAGE_CREATE":
-                    if (d.channel_id === dmMut.current?.id) {
+                    if (d.channel_id === dm?.id) {
                         setMessages((prev) => [d, ...prev]);
                         if (d.author.id === state.initialReady?.user.id) {
                             new Audio(send).play();
@@ -132,7 +147,7 @@ export default function DMs() {
         return () => {
             ipcRenderer.removeAllListeners("gateway-dispatch");
         };
-    }, [state, dmMut.current]);
+    }, [state, dmMut.current?.id, dm]);
     useEffect(() => {
         if (state.initialReady) {
             dmMut.current = state.initialReady?.private_channels.find((c) =>
@@ -149,14 +164,23 @@ export default function DMs() {
         }
     }, [state.initialReady]);
     useEffect(() => {
-        if (!dmMut.current) return;
-        setState({
-            ...state,
-            title: `${
-                dmMut.current?.name || result(users?.map((u) => u?.username))
-            } - Instant Message`,
-        });
-
+        let title = "";
+        switch (params.get("type")) {
+            case "dm":
+                title = `${
+                    dmMut.current?.name ||
+                    result(users?.map((u) => u?.username))
+                } - Instant Message`;
+                break;
+            case "guild":
+                dmMut.current = state.initialReady?.guilds
+                    .find((g) =>
+                        g.channels.find((c) => c.id === params.get("id"))
+                    )
+                    ?.channels.find((c) => c.id === params.get("id"));
+                title = `#${dmMut.current?.name} - Instant Message`;
+                break;
+        }
         req<Message[]>(
             state?.token,
             `/channels/${dmMut.current?.id}/messages?limit=50`,
@@ -164,29 +188,16 @@ export default function DMs() {
         ).then((res) => {
             setMessages(res);
         });
+        setState({
+            ...state,
+            title: title,
+        });
     }, []);
     useEffect(() => {
         if (chatRef.current) {
             chatRef.current.scrollTop = chatRef.current.scrollHeight;
         }
     }, [messages]);
-    function onSubmit() {
-        {
-            const textarea = document.querySelector(
-                ".input-container"
-            ) as HTMLTextAreaElement;
-            const content = textarea?.value;
-            textarea.value = "";
-            req<Message>(
-                state?.token,
-                `/channels/${dmMut.current?.id}/messages`,
-                "POST",
-                {
-                    content,
-                }
-            );
-        }
-    }
     return (
         <div>
             <Divider
@@ -241,7 +252,9 @@ export default function DMs() {
                                         // TODO: parse mentions AND markdown
                                         parse(
                                             DOMPurify.sanitize(
-                                                marked.parse(m.content)
+                                                marked.parse(m.content, {
+                                                    headerIds: false,
+                                                })
                                             ).replace(
                                                 "<a",
                                                 "<a target='_blank'"
@@ -279,8 +292,20 @@ export default function DMs() {
                 <textarea
                     onKeyDown={(event) => {
                         if (event.key === "Enter" && !event.shiftKey) {
-                            event.preventDefault(); // Prevent the default behavior of adding a new line
-                            onSubmit(); // Call your onSubmit function
+                            event.preventDefault();
+                            const textarea = document.querySelector(
+                                ".input-container"
+                            ) as HTMLTextAreaElement;
+                            const content = textarea?.value;
+                            textarea.value = "";
+                            req<Message>(
+                                state?.token,
+                                `/channels/${dm?.id}/messages`,
+                                "POST",
+                                {
+                                    content,
+                                }
+                            );
                         }
                     }}
                     className="input-container"
@@ -293,67 +318,123 @@ export default function DMs() {
                         minWidth: 120,
                     }}
                     onClick={() => {
-                        let input = document.createElement("input");
+                        const input = document.createElement("input");
                         input.type = "file";
                         input.onchange = (_) => {
-                            let files = Array.from(input.files!);
-                            let attachments: any[] = [];
-                            files.map((file) => {
-                                if (
-                                    file.type &&
-                                    !file.type.startsWith("image/")
-                                ) {
-                                    return;
-                                }
-
-                                const reader = new FileReader();
-
-                                reader.addEventListener("load", (event) => {
-                                    const data = event.target?.result as
-                                        | string
-                                        | undefined;
-                                    if (!data) return;
-                                    const dataBuf = Buffer.from(
-                                        data.split(",")[1],
-                                        "base64"
-                                    );
-                                    console.log(dataBuf);
-                                    attachments.push({
-                                        file_size: dataBuf.byteLength,
-                                        filename: file.name,
-                                        // random number between 1 and 1000
-                                        id: String(
-                                            Math.floor(Math.random() * 1000)
-                                        ),
-                                        is_clip: false,
-                                    });
-                                    req<any>(
-                                        state?.token,
-                                        `/channels/${dmMut.current?.id}/attachments`,
-                                        "POST",
-                                        {
-                                            files: attachments,
-                                        }
-                                    ).then((res) => {
-                                        res.attachments.map((a: any) => {
-                                            fetch(a.upload_url, {
-                                                method: "PUT",
-                                                body: a.file,
-                                                headers: {
-                                                    Origin: "https://discord.com",
-                                                    Referer:
-                                                        "https://discord.com",
-                                                },
-                                            });
-                                        });
-                                    });
-                                });
-
-                                reader.readAsDataURL(file);
+                            const files = Array.from(input.files!);
+                            const file = files[0];
+                            // if (!file.type.startsWith("image/")) {
+                            //     return;
+                            // }
+                            const reader = new FileReader();
+                            reader.addEventListener("load", async (event) => {
+                                const data = event.target?.result as
+                                    | string
+                                    | undefined;
+                                // if (!data) return;
+                                const dataBuf = Buffer.from(
+                                    await (await fetch(data || "")).text(),
+                                    "utf-8"
+                                );
+                                console.log(dataBuf);
                             });
+                            reader.readAsDataURL(file);
                         };
                         input.click();
                     }}
+                    // onClick={() => {
+                    //     let input = document.createElement("input");
+                    //     input.type = "file";
+                    //     input.onchange = (_) => {
+                    //         let files = Array.from(input.files!);
+                    //         let attachments: any[] = [];
+                    //         files.map((file) => {
+                    //             if (
+                    //                 file.type &&
+                    //                 !file.type.startsWith("image/")
+                    //             ) {
+                    //                 return;
+                    //             }
+
+                    //             const reader = new FileReader();
+
+                    //             reader.addEventListener("load", (event) => {
+                    //                 const data = event.target?.result as
+                    //                     | string
+                    //                     | undefined;
+                    //                 if (!data) return;
+                    //                 const dataBuf = Buffer.from(
+                    //                     data.replace(
+                    //                         /^data:image\/\w+;base64,/,
+                    //                         ""
+                    //                     ),
+                    //                     "base64"
+                    //                 );
+                    //                 console.log(dataBuf);
+                    //                 attachments.push({
+                    //                     file_size: dataBuf.byteLength,
+                    //                     filename: file.name,
+                    //                     // random number between 1 and 1000
+                    //                     id: String(
+                    //                         Math.floor(Math.random() * 1000)
+                    //                     ),
+                    //                     is_clip: false,
+                    //                 });
+                    //                 req<any>(
+                    //                     state?.token,
+                    //                     `/channels/${dm?.id}/attachments`,
+                    //                     "POST",
+                    //                     {
+                    //                         files: attachments,
+                    //                     }
+                    //                 ).then((res) => {
+                    //                     res.attachments.map((a: any) => {
+                    //                         fetch(
+                    //                             `http://localhost:59813${
+                    //                                 new URL(a.upload_url)
+                    //                                     .pathname
+                    //                             }`,
+                    //                             {
+                    //                                 method: "PUT",
+                    //                                 body: dataBuf.toString(
+                    //                                     "utf-8"
+                    //                                 ),
+                    //                                 headers: {
+                    //                                     Origin: "https://discord.com",
+                    //                                     Referrer:
+                    //                                         "https://discord.com",
+                    //                                 },
+                    //                             }
+                    //                         ).then(() => {
+                    //                             req<Message>(
+                    //                                 state?.token,
+                    //                                 "/channels/" +
+                    //                                     dm?.id +
+                    //                                     "/messages",
+                    //                                 "POST",
+                    //                                 {
+                    //                                     content: "",
+                    //                                     attachments: [
+                    //                                         {
+                    //                                             id: "0",
+                    //                                             filename:
+                    //                                                 file.name,
+                    //                                             uploaded_filename:
+                    //                                                 a.upload_filename,
+                    //                                         },
+                    //                                     ],
+                    //                                 }
+                    //                             );
+                    //                         });
+                    //                     });
+                    //                 });
+                    //             });
+
+                    //             reader.readAsDataURL(file);
+                    //         });
+                    //     };
+                    //     input.click();
+                    // }}
                 >
                     Upload image
                 </button>
@@ -364,7 +445,21 @@ export default function DMs() {
                         right: 8,
                         minWidth: 80,
                     }}
-                    onClick={onSubmit}
+                    onClick={() => {
+                        const textarea = document.querySelector(
+                            ".input-container"
+                        ) as HTMLTextAreaElement;
+                        const content = textarea?.value;
+                        textarea.value = "";
+                        req<Message>(
+                            state?.token,
+                            `/channels/${dm?.id}/messages`,
+                            "POST",
+                            {
+                                content,
+                            }
+                        );
+                    }}
                 >
                     Send
                 </button>

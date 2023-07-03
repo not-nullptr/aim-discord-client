@@ -5,7 +5,6 @@ import { req } from "@renderer/util/Rest";
 import Divider from "@renderer/components/Divider";
 import { closeWindow } from "../../../../src/shared/util/Window";
 import { setWindowSize } from "./../../../shared/util/Window";
-const { ipcRenderer } = window.require("electron");
 
 export default function BuddyInfo() {
     const { state, setState } = useContext(Context);

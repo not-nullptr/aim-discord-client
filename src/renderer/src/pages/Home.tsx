@@ -6,6 +6,7 @@ import banner from "../img/banner.png";
 import splashCropped from "../img/splash-cropped.png";
 import { ChannelTypes } from "../../../../src/shared/types/Gateway";
 import { createWindow } from "../../../../src/shared/util/Window";
+import IconButton from "@renderer/components/IconButton";
 const { ipcRenderer } = window.require("electron");
 
 const result = (a: any) =>
@@ -101,6 +102,37 @@ export default function Home() {
                                     .filter(
                                         (c) => c.type === ChannelTypes.GROUP_DM
                                     )
+                                    .sort((a, b) => {
+                                        var textA = (
+                                            a.name ||
+                                            result(
+                                                a.recipient_ids
+                                                    ?.map((r) =>
+                                                        state.initialReady?.users.find(
+                                                            (u) => u.id === r
+                                                        )
+                                                    )
+                                                    .map((u) => u?.username)
+                                            )
+                                        ).toUpperCase();
+                                        var textB = (
+                                            b.name ||
+                                            result(
+                                                b.recipient_ids
+                                                    ?.map((r) =>
+                                                        state.initialReady?.users.find(
+                                                            (u) => u.id === r
+                                                        )
+                                                    )
+                                                    .map((u) => u?.username)
+                                            )
+                                        ).toUpperCase();
+                                        return textA < textB
+                                            ? -1
+                                            : textA > textB
+                                            ? 1
+                                            : 0;
+                                    })
                                     .map((gc) => (
                                         <li
                                             style={{
@@ -153,8 +185,8 @@ export default function Home() {
                             <ul>
                                 {state.initialReady?.users
                                     .sort((a, b) => {
-                                        var textA = a.username.toUpperCase();
-                                        var textB = b.username.toUpperCase();
+                                        const textA = a.username.toUpperCase();
+                                        const textB = b.username.toUpperCase();
                                         return textA < textB
                                             ? -1
                                             : textA > textB
@@ -200,43 +232,87 @@ export default function Home() {
                                 Servers ({state.initialReady?.guilds.length})
                             </summary>
                             <ul>
-                                {state.initialReady?.guilds.map((x) => (
-                                    <li
-                                        key={x.id}
-                                        onMouseDown={(e) => {
-                                            document
-                                                .querySelectorAll("li.selected")
-                                                .forEach((x) =>
-                                                    x.classList.remove(
-                                                        "selected"
+                                {state.initialReady?.guilds
+                                    .sort((a, b) => {
+                                        const textA =
+                                            a.properties?.name.toUpperCase();
+                                        const textB =
+                                            b.properties?.name.toUpperCase();
+                                        return textA < textB
+                                            ? -1
+                                            : textA > textB
+                                            ? 1
+                                            : 0;
+                                    })
+                                    .map((x) => (
+                                        <details
+                                            key={x.id}
+                                            onMouseDown={(e) => {
+                                                document
+                                                    .querySelectorAll(
+                                                        "li.selected"
                                                     )
+                                                    .forEach((x) =>
+                                                        x.classList.remove(
+                                                            "selected"
+                                                        )
+                                                    );
+                                                const target =
+                                                    e.target as HTMLLIElement;
+                                                target.classList.add(
+                                                    "selected"
                                                 );
-                                            const target =
-                                                e.target as HTMLLIElement;
-                                            target.classList.add("selected");
-                                        }}
-                                    >
-                                        {x.properties?.name}
-                                    </li>
-                                ))}
+                                            }}
+                                        >
+                                            <summary>
+                                                {x.properties?.name}
+                                            </summary>
+                                            <ul>
+                                                {x.channels
+                                                    ?.filter(
+                                                        (c) =>
+                                                            c.type ===
+                                                            ChannelTypes.GUILD_TEXT
+                                                    )
+                                                    .sort((a, b) => {
+                                                        const textA = (
+                                                            a.name || ""
+                                                        ).toUpperCase();
+                                                        const textB = (
+                                                            b.name || ""
+                                                        ).toUpperCase();
+                                                        return textA < textB
+                                                            ? -1
+                                                            : textA > textB
+                                                            ? 1
+                                                            : 0;
+                                                    })
+                                                    .map((c) => (
+                                                        <li
+                                                            onDoubleClick={() => {
+                                                                createWindow(
+                                                                    `/message?id=${c.id}&type=guild`,
+                                                                    611,
+                                                                    359
+                                                                );
+                                                            }}
+                                                            key={c.id}
+                                                        >
+                                                            {c.name}
+                                                        </li>
+                                                    ))}
+                                            </ul>
+                                        </details>
+                                    ))}
                             </ul>
                         </details>
                     </li>
                 </ul>
             </div>
             <div className="horizontal-button-container">
-                <div>
-                    <img src={placeholder} />
-                    IM
-                </div>
-                <div>
-                    <img src={placeholder} />
-                    Chat
-                </div>
-                <div>
-                    <img src={placeholder} />
-                    Write
-                </div>
+                <IconButton name="im-home" />
+                <IconButton name="chat-home" />
+                <IconButton name="write-home" />
                 <div
                     onClick={() => createWindow(`/buddyinfo`, 307, 138, false)}
                 >

@@ -9,6 +9,7 @@ import {
     getDebugToken,
     startGateway,
 } from "../../../../src/shared/util/Window";
+import IconButton from "@renderer/components/IconButton";
 const { ipcRenderer } = window.require("electron");
 
 export default function Login() {
@@ -60,21 +61,7 @@ export default function Login() {
                     width: "calc(100% - 12px)",
                 }}
             />
-            <form
-                onSubmit={async (e) => {
-                    e.preventDefault();
-                    startGateway((e.target as any).token.value);
-                    setState({
-                        ...state,
-                        token: (e.target as any).token.value,
-                    });
-                    // waitForInitial().then(() => {
-                    //     navigate("/home");
-                    // });
-                    createWindow("/loading", 214, 266, false, true);
-                }}
-                className="login-form"
-            >
+            <form id="login-form" className="login-form">
                 <label htmlFor="token">
                     Token
                     <input
@@ -109,7 +96,7 @@ export default function Login() {
                     </label>
                 </div> */}
                 <div className="login-form-error">{error}</div>
-                <input
+                {/* <input
                     type="submit"
                     value="Sign On"
                     style={{
@@ -118,6 +105,30 @@ export default function Login() {
                         width: "40%",
                         alignSelf: "flex-end",
                         fontWeight: "bold",
+                    }}
+                /> */}
+                <IconButton
+                    name="sign-on"
+                    onClick={async (e) => {
+                        e.preventDefault();
+                        const form = document.getElementById(
+                            "login-form"
+                        ) as HTMLFormElement;
+                        startGateway(form.token.value);
+                        setState({
+                            ...state,
+                            token: form.token.value,
+                        });
+                        // waitForInitial().then(() => {
+                        //     navigate("/home");
+                        // });
+                        createWindow("/loading", 214, 266, false, true);
+                    }}
+                    style={{
+                        position: "absolute",
+                        bottom: 20,
+                        right: 16,
+                        alignSelf: "flex-end",
                     }}
                 />
                 {/* {requiresCaptcha && (

@@ -172,17 +172,17 @@ input[type="password"] {
 }
 
 .button-frame {
-	border: ridge;
-	border-width: 1px;
-	border-color: black;
-	display: flex;
-	align-items: center;
-  	justify-content: center;
+    border: ridge;
+    border-width: 1px;
+    border-color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .button-frame > button {
-	margin: 0;
-	padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 button,
@@ -207,52 +207,52 @@ input[type="submit"]:hover {
 }
 
 .toolbar-item {
-	margin-right: 13px;
+    margin-right: 13px;
 }
 
 .horizontal-button-container {
-	margin: 5px;
-	width: 130px;
-	align-self: center;
-	display: flex;
-	text-align: center;
-	justify-content: space-between;
+    margin: 5px;
+    width: 130px;
+    align-self: center;
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
 }
 
-.horizontal-button-container > div {
-	font-size: 10px;
-	font-family: sans-serif;
-	width: 22px;
+/* .horizontal-button-container > div {
+    font-size: 10px;
+    font-family: sans-serif;
+    width: 22px;
 }
 
 .horizontal-button-container > div > img {
-	padding-bottom: 3px;
-	width: 22px;
-	height: 22px;
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-}
+    padding-bottom: 3px;
+    width: 22px;
+    height: 22px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+} */
 
 .good-lookin-div {
-	padding: 2px 4px;
-	font-family: "Times New Roman", Times, serif;
-	font-size: 16px;
-	border-top: solid thin #aca899;
-	border-left: solid thin #aca899;
-	border-bottom: solid thin #ffffff;
-	border-right: solid thin #ffffff;
-	box-shadow: inset 1px 1px 0px 0px #000, inset -1px -1px 0px 0px #ece9d8;
-	background-color: white;
-	display: flex;
-	outline: none;
-	cursor: default;
-	resize: none;
+    padding: 2px 4px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+    border-top: solid thin #aca899;
+    border-left: solid thin #aca899;
+    border-bottom: solid thin #ffffff;
+    border-right: solid thin #ffffff;
+    box-shadow: inset 1px 1px 0px 0px #000, inset -1px -1px 0px 0px #ece9d8;
+    background-color: white;
+    display: flex;
+    outline: none;
+    cursor: default;
+    resize: none;
 }
 
 .good-lookin-div * {
-	font-family: "Times New Roman", Times, serif;
-	font-size: 16px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
 }
 
 button:active,
@@ -260,4 +260,8 @@ input[type="button"]:active,
 input[type="submit"]:active {
     background-image: url("./img/ui/button-active.png");
     border: none;
+}
+
+.dotted {
+    outline: dotted thin #0f0f0f;
 }

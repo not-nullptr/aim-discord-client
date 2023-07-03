@@ -19,12 +19,10 @@ import {
     MessageCreatePacket,
     ReadyPacket,
 } from "../shared/types/Gateway";
-import {
-    sendOp,
-    GatewayEvent,
-    convertToMentionName,
-} from "../shared/util/Gateway";
+import { sendOp, GatewayEvent } from "../shared/util/Gateway";
 import dotenv from "dotenv";
+import express from "express";
+import cors from "cors";
 
 dotenv.config();
 
@@ -51,7 +49,48 @@ let windows: {
     id: number;
     isMain: boolean;
 }[] = [];
-const notis: Notification[] = [];
+
+const server = express();
+
+server.use(cors());
+server.options("*", cors()); // enable pre-flight
+server.use(express.raw({ type: "*/*" }));
+
+server.all("*", async (req, res) => {
+    /*
+        1. get the full path (i.e. /avatars/123/456.png)
+        2. send request to https://discord-attachments-uploads-prd.storage.googleapis.com/123/456.png (or whatever the path is)
+        3. send the response from that to the client
+    */
+
+    const url = req.url;
+    console.log(req.body);
+    try {
+        const cdnRes = await fetch(
+            "http://discord-attachments-uploads-prd.storage.googleapis.com" +
+                url,
+            {
+                method: req.method,
+                headers: {
+                    Host: "https://discord.com",
+                    Origin: "https://discord.com",
+                    Referer: "https://discord.com",
+                },
+                // body: req.body.toString("utf-8"),
+                body: (
+                    await sharp(req.body).jpeg().toBuffer()
+                ).toString("utf-8"),
+            }
+        );
+        console.log("sending");
+        return res.status(cdnRes.status).send(await cdnRes.arrayBuffer());
+    } catch (e) {
+        console.log(e);
+        return res.sendStatus(500);
+    }
+});
+
+server.listen(59813, () => console.log("CDN CORS spoofer running on 59813"));
 
 const defaultOptions: Electron.BrowserWindowConstructorOptions = {
     width: 216,
@@ -144,6 +183,18 @@ const getTypeHandlers = (
     state: State
 ): { [K in DispatchType]?: (payload: any) => any } => ({
     MESSAGE_CREATE: async (payload: MessageCreatePacket) => {
+        const channel =
+            state.initialReady?.private_channels.find(
+                (c) => c.id === payload.channel_id
+            ) ||
+            state.initialReady?.guilds
+                .find(
+                    (g) =>
+                        g.channels.find((c) => c.id === payload.channel_id) !==
+                        undefined
+                )
+                ?.channels.find((c) => c.id === payload.channel_id);
+
         const isMentioned =
             payload.mentions.filter((x) => x.id === state.initialReady?.user.id)
                 .length > 0;
@@ -159,57 +210,61 @@ const getTypeHandlers = (
         const isFocused = findWindowFromPath(
             "/message?id=" + payload.channel_id
         )?.isFocused();
-        if ((isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf) {
+        const shouldNotify =
+            (isMentioned || dmOrGroupChat || mentionsEveryone) && !isSelf;
+        if (shouldNotify) {
             if (!isFocused) {
-                notis.forEach((n) => n.close());
-                const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
-                const noti = new Notification({
-                    title: `${payload.author.username} says:`,
-                    body: `${
-                        convertToMentionName(payload.content, state)
-                            .cleanedMessage
-                    } ${
-                        payload.attachments.length > 0
-                            ? `<${payload.attachments.length} attachment${
-                                  payload.attachments.length === 1 ? "" : "s"
-                              }>`
-                            : ""
-                    }`,
-                    icon: await (async () => {
-                        try {
-                            return nativeImage.createFromBuffer(
-                                await sharp(
-                                    await (
-                                        await fetch(iconUrl as string)
-                                    ).arrayBuffer()
-                                )
-                                    .resize(256, 256)
-                                    .png()
-                                    .toBuffer()
-                            );
-                        } catch {
-                            return undefined;
-                        }
-                    })(),
-                    silent: true,
-                });
-                noti.on("click", () => {
-                    const isDm = state.initialReady?.private_channels.find(
-                        (c) =>
-                            c.id === payload.channel_id &&
-                            c.type === ChannelTypes.DM
-                    );
-                    createOrFocusWindow(
-                        `/message?id=${payload.channel_id}${
-                            isDm ? `&type=dm` : ""
-                        }`,
-                        611,
-                        359
-                    );
-                });
-                notis.push(noti);
-                noti.show();
+                // win?.webContents.send("play-sound", "Receive");
+                // notis.forEach((n) => n.close());
+                // const iconUrl = `https://cdn.discordapp.com/avatars/${payload.author.id}/${payload.author.avatar}.png`;
+                // const noti = new Notification({
+                //     title: `${payload.author.username} says:`,
+                //     body: `${
+                //         convertToMentionName(payload.content, state)
+                //             .cleanedMessage
+                //     } ${
+                //         payload.attachments.length > 0
+                //             ? `<${payload.attachments.length} attachment${
+                //                   payload.attachments.length === 1 ? "" : "s"
+                //               }>`
+                //             : ""
+                //     }`,
+                //     icon: await (async () => {
+                //         try {
+                //             return nativeImage.createFromBuffer(
+                //                 await sharp(
+                //                     await (
+                //                         await fetch(iconUrl as string)
+                //                     ).arrayBuffer()
+                //                 )
+                //                     .resize(256, 256)
+                //                     .png()
+                //                     .toBuffer()
+                //             );
+                //         } catch {
+                //             return undefined;
+                //         }
+                //     })(),
+                //     silent: true,
+                // });
+                // noti.on("click", () => {
+                //     const isDm = state.initialReady?.private_channels.find(
+                //         (c) =>
+                //             c.id === payload.channel_id &&
+                //             c.type === ChannelTypes.DM
+                //     );
+                //     createOrFocusWindow(
+                //         `/message?id=${payload.channel_id}${
+                //             isDm ? `&type=dm` : ""
+                //         }`,
+                //         611,
+                //         359
+                //     );
+                // });
+                // notis.push(noti);
+                // noti.show();
             }
+        } else if (isFocused && !isSelf) {
             win?.webContents.send("play-sound", "Receive");
         }
         // ) {
