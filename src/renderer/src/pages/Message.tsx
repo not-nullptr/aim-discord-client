@@ -461,9 +461,7 @@ export default function DMs() {
                         );
                     }}
                     name="send"
-                >
-                    Send
-                </IconButton>
+                />
             </div>
         </div>
     );
