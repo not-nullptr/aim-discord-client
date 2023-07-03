@@ -8,7 +8,6 @@ import {
     closeWindow,
     redirectWindowsByPath,
 } from "../../../../src/shared/util/Window";
-const { ipcRenderer } = window.require("electron");
 
 export default function Loading() {
     const { state, setState } = useContext(Context);

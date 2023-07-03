@@ -210,15 +210,6 @@ input[type="submit"]:hover {
     margin-right: 13px;
 }
 
-.horizontal-button-container {
-    margin: 5px;
-    width: 130px;
-    align-self: center;
-    display: flex;
-    text-align: center;
-    justify-content: space-between;
-}
-
 /* .horizontal-button-container > div {
     font-size: 10px;
     font-family: sans-serif;
@@ -264,4 +255,49 @@ input[type="submit"]:active {
 
 .dotted {
     outline: dotted thin #0f0f0f;
+}
+
+/* https://stackoverflow.com/a/21233577 */
+
+.marquee {
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.marquee span {
+    display: inline-block;
+    width: max-content;
+
+    padding-left: 100%;
+    /* show the marquee just outside the paragraph */
+    will-change: transform;
+    animation: marquee 25s steps(135) infinite;
+}
+
+.marquee span:hover {
+    animation-play-state: paused;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(-100%, 0);
+    }
+}
+
+/* Respect user preferences about animations */
+
+@media (prefers-reduced-motion: reduce) {
+    .marquee span {
+        animation-iteration-count: 1;
+        animation-duration: 0.01;
+        /* instead of animation: none, so an animationend event is
+     * still available, if previously attached.
+     */
+        width: auto;
+        padding-left: 0;
+    }
 }

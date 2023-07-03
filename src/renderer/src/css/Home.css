@@ -43,6 +43,12 @@ ul > details {
 .buddy-list-container {
     flex-grow: 1;
     overflow: auto;
+    box-shadow: inset 2px 2px 0px 0px #716f64;
+    margin-top: 3px;
+    background-image: url("../img/buddylist-bg.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: white;
 }
 
 li.selected {
@@ -53,4 +59,42 @@ li.selected {
 li details {
     margin-bottom: 6px;
     margin-top: 6px;
+}
+
+.horizontal-button-container {
+    padding: 2px 0px;
+    align-self: center;
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
+}
+
+.horizontal-button-container-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: auto;
+}
+
+.horizontal-button-container {
+    background-color: #ece9d8;
+}
+
+.horizontal-button-container-container.bright-background {
+    background-color: transparent;
+    box-shadow: none;
+    background-color: #fffbf0;
+}
+
+.horizontal-button-container-container.bright-background
+    .horizontal-button-container {
+    background-color: #fffbf0;
+}
+
+.ticker {
+    border-top: solid thin #aca899;
+    height: 34px;
+    background-color: #fffbf0;
 }

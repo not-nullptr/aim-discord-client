@@ -5,8 +5,12 @@ import placeholder from "../img/placeholder.png";
 import banner from "../img/banner.png";
 import splashCropped from "../img/splash-cropped.png";
 import { ChannelTypes } from "../../../../src/shared/types/Gateway";
-import { createWindow } from "../../../../src/shared/util/Window";
+import {
+    createWindow,
+    setWindowSize,
+} from "../../../../src/shared/util/Window";
 import IconButton from "@renderer/components/IconButton";
+import ticker from "../img/ticker.png";
 const { ipcRenderer } = window.require("electron");
 
 const result = (a: any) =>
@@ -14,8 +18,19 @@ const result = (a: any) =>
         ? `${a.slice(0, -1).join(", ")} and ${a.slice(-1)}`
         : { 0: "", 1: a[0] }[a.length];
 
+function openDetail(id: string) {
+    document.querySelectorAll("details").forEach((x) => {
+        x.open = false;
+    });
+    const im = document.getElementById(id) as HTMLDetailsElement;
+    if (!im.open) im.open = true;
+}
+
 export default function Home() {
     const { state, setState } = useContext(Context);
+    useEffect(() => {
+        setWindowSize(146, 453);
+    }, []);
     useEffect(() => {
         console.log(state.initialReady?.private_channels);
         setState({
@@ -70,24 +85,42 @@ export default function Home() {
                 <img
                     src={banner}
                     onDoubleClick={() =>
-                        createWindow("/loading", 214, 266, false, false)
+                        console.log(window.screen.width, window.screen.height)
                     }
                     style={{ width: 143 }}
                 />
                 <img src={splashCropped} />
             </div>
             <div
-                className="text-inset"
                 style={{
-                    width: "unset",
+                    width: "100%",
+                    display: "flex",
+                    height: 14,
+                    marginTop: 3,
+                    alignItems: "center",
                 }}
             >
-                {`${state.initialReady?.user.username}'s Buddy List:`}
+                <div
+                    className="text-inset"
+                    style={{
+                        width: "unset",
+                        flexGrow: 1,
+                        whiteSpace: "nowrap",
+                        textOverflow: "ellipsis",
+                        /* enable overflow, but hide scrollbar (so user can drag on text) */
+                        overflow: "hidden",
+                        overflowX: "hidden",
+                        overflowY: "hidden",
+                    }}
+                >
+                    {`${state.initialReady?.user.username}'s Buddy List:`}
+                </div>
+                <IconButton name="content-panel" style={{}} />
             </div>
             <div className="buddy-list-container">
                 <ul className="buddy-list">
                     <li>
-                        <details>
+                        <details id="group-chats">
                             <summary>
                                 Group Chats (
                                 {
@@ -178,7 +211,7 @@ export default function Home() {
                                     ))}
                             </ul>
                         </details>
-                        <details>
+                        <details id="buddies">
                             <summary>
                                 Buddies ({state.initialReady?.users.length})
                             </summary>
@@ -227,7 +260,7 @@ export default function Home() {
                                     ))}
                             </ul>
                         </details>
-                        <details>
+                        <details id="servers">
                             <summary>
                                 Servers ({state.initialReady?.guilds.length})
                             </summary>
@@ -309,19 +342,88 @@ export default function Home() {
                     </li>
                 </ul>
             </div>
-            <div className="horizontal-button-container">
-                <IconButton name="im-home" />
-                <IconButton name="chat-home" />
-                <IconButton name="write-home" />
-                <div
-                    onClick={() => createWindow(`/buddyinfo`, 307, 138, false)}
-                >
-                    <img src={placeholder} />
-                    Info
+            <div
+                className="horizontal-button-container-container"
+                style={{
+                    borderBottom: "solid thin #716f64",
+                }}
+            >
+                <div className="horizontal-button-container">
+                    <IconButton
+                        onClick={() => openDetail("buddies")}
+                        name="im-home"
+                    />
+                    <IconButton
+                        onClick={() => openDetail("group-chats")}
+                        name="chat-home"
+                    />
+                    <IconButton name="write-home" />
+                    <IconButton
+                        onClick={() =>
+                            createWindow(`/buddyinfo`, 307, 138, false)
+                        }
+                        name="info-home"
+                    />
+                    <IconButton name="setup-home" />
                 </div>
-                <div>
-                    <img src={placeholder} />
-                    Setup
+            </div>
+            <div
+                className="horizontal-button-container-container bright-background"
+                style={{
+                    height: 47,
+                }}
+            >
+                <div
+                    className="horizontal-button-container"
+                    style={{
+                        width: 135,
+                    }}
+                >
+                    <IconButton name="read-home" />
+                    <IconButton name="today-home" />
+                    <IconButton name="away-home" />
+                    <IconButton name="prefs-home" />
+                </div>
+            </div>
+            <div className="ticker">
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                    }}
+                >
+                    <img
+                        src={ticker}
+                        style={{
+                            marginRight: 4,
+                        }}
+                    />
+                    <div className="marquee">
+                        <span>
+                            Made by{" "}
+                            <a
+                                target="_blank"
+                                href="https://twitter.com/RobotPlaysTF2"
+                            >
+                                Maddie
+                            </a>
+                            {" and"}{" "}
+                            <a
+                                target="_blank"
+                                href="https://twitter.com/McMistrzYT"
+                            >
+                                mc
+                            </a>
+                        </span>
+                    </div>
+                </div>
+                <div
+                    style={{
+                        position: "absolute",
+                        bottom: 5,
+                    }}
+                >
+                    Changelogs could go here?
                 </div>
             </div>
         </div>
