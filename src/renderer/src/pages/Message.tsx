@@ -12,6 +12,7 @@ import parse from "html-react-parser";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import { createWindow } from "../../../../src/shared/util/Window";
+import IconButton from "@renderer/components/IconButton";
 
 // function convertToMentionName(
 //     message: string,
@@ -438,12 +439,11 @@ export default function DMs() {
                 >
                     Upload image
                 </button>
-                <button
+                <IconButton
                     style={{
                         position: "absolute",
                         bottom: 8,
                         right: 8,
-                        minWidth: 80,
                     }}
                     onClick={() => {
                         const textarea = document.querySelector(
@@ -460,9 +460,10 @@ export default function DMs() {
                             }
                         );
                     }}
+                    name="send"
                 >
                     Send
-                </button>
+                </IconButton>
             </div>
         </div>
     );
