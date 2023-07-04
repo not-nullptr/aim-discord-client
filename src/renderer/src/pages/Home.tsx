@@ -47,16 +47,7 @@ export default function Home() {
         };
     }, [state.initialReady?.user.username]);
     return (
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                paddingLeft: 2,
-                paddingRight: 2,
-                overflow: "hidden",
-                height: "calc(100vh - 28px)",
-            }}
-        >
+        <div className="home-container">
             <div
                 style={{
                     height: 14,
@@ -419,8 +410,7 @@ export default function Home() {
                 </div>
                 <div
                     style={{
-                        position: "absolute",
-                        bottom: 5,
+                        marginTop: 3,
                     }}
                 >
                     Changelogs could go here?

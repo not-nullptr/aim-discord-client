@@ -181,6 +181,8 @@ export default function DMs() {
                     ?.channels.find((c) => c.id === params.get("id"));
                 title = `#${dmMut.current?.name} - Instant Message`;
                 break;
+            default:
+                title = `${dmMut.current?.name} - Instant Message`;
         }
         req<Message[]>(
             state?.token,
