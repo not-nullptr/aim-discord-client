@@ -31,7 +31,7 @@ export default function App() {
     return (
         <Context.Provider value={{ state: reactState, setState }}>
             <HashRouter>
-                <Titlebar />
+                {/* <Titlebar /> */}
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/home" element={<Home />} />

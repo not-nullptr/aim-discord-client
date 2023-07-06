@@ -95,12 +95,10 @@ const defaultOptions: Electron.BrowserWindowConstructorOptions = {
     height: 394,
     // width: 1000,
     // height: 800,
-    frame: false,
     icon: path.join(__dirname, "/resources/favicon.ico"),
     // resizable: false,
     webPreferences: {
         devTools: true,
-
         preload: path.join(__dirname, "../preload/index.js"),
         nodeIntegration: true,
         contextIsolation: false,

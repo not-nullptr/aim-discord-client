@@ -2,8 +2,6 @@ import { State } from "../types/State";
 
 const { ipcRenderer } = require("electron");
 
-// I HATE N1993R5
-
 export enum Icon {
     INFO = "info",
     WARNING = "warning",

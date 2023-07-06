@@ -41,6 +41,7 @@ ul > details {
 }
 
 .buddy-list-container {
+    height: 0px; /* stupid ass fix */
     flex-grow: 1;
     overflow: auto;
     box-shadow: inset 2px 2px 0px 0px #716f64;
@@ -107,7 +108,8 @@ li details {
     padding-left: 2px;
     padding-right: 2px;
     overflow: hidden;
-    height: calc(100vh - 28px);
+    /* height: calc(100vh - 28px); */
+    height: 100vh;
 }
 
 .home-container > * {
